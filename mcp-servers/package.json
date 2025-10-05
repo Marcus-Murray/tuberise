@@ -10,6 +10,12 @@
     "start:api-tester": "node api-tester-mcp.js",
     "start:email-sender": "node email-sender-mcp.js",
     "start:progress-tracker": "node progress-tracker-mcp.js",
+    "start:ai-validation": "node ai-validation-mcp.js",
+    "start:code-health": "node code-health-mcp.js",
+    "start:code-mapper": "node code-mapper-mcp.js",
+    "start:code-search": "node code-search-mcp.js",
+    "start:session-analyzer": "node session-analyzer-mcp.js",
+    "start:typescript-react-agent": "node typescript-react-agent-mcp.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

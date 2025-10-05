@@ -34,6 +34,48 @@
       "env": {
         "NODE_ENV": "development"
       }
+    },
+    "ai-validation": {
+      "command": "node",
+      "args": ["mcp-servers/ai-validation-mcp.js"],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    "code-health": {
+      "command": "node",
+      "args": ["mcp-servers/code-health-mcp.js"],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    "code-mapper": {
+      "command": "node",
+      "args": ["mcp-servers/code-mapper-mcp.js"],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    "code-search": {
+      "command": "node",
+      "args": ["mcp-servers/code-search-mcp.js"],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    "session-analyzer": {
+      "command": "node",
+      "args": ["mcp-servers/session-analyzer-mcp.js"],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    "typescript-react-agent": {
+      "command": "node",
+      "args": ["mcp-servers/typescript-react-agent-mcp.js"],
+      "env": {
+        "NODE_ENV": "development"
+      }
     }
   }
 }
