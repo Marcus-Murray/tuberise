@@ -1,0 +1,29 @@
+{
+  "name": "tuberise-mcp-servers",
+  "version": "1.0.0",
+  "description": "Custom MCP servers for Tuberise Analytics project",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start:package-manager": "node package-manager-mcp.js",
+    "start:database-designer": "node database-designer-mcp.js",
+    "start:api-tester": "node api-tester-mcp.js",
+    "start:email-sender": "node email-sender-mcp.js",
+    "start:progress-tracker": "node progress-tracker-mcp.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mcp",
+    "cursor",
+    "tuberise",
+    "analytics"
+  ],
+  "author": "Tuberise Analytics Team",
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.19.1",
+    "axios": "^1.12.2",
+    "nodemailer": "^7.0.6",
+    "zod": "^3.25.76"
+  }
+}

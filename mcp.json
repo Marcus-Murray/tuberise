@@ -1,0 +1,39 @@
+{
+  "mcpServers": {
+    "package-manager": {
+      "command": "node",
+      "args": ["mcp-servers/package-manager-mcp.js"],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    "database-designer": {
+      "command": "node",
+      "args": ["mcp-servers/database-designer-mcp.js"],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    "api-tester": {
+      "command": "node",
+      "args": ["mcp-servers/api-tester-mcp.js"],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    "email-sender": {
+      "command": "node",
+      "args": ["mcp-servers/email-sender-mcp.js"],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    "progress-tracker": {
+      "command": "node",
+      "args": ["mcp-servers/progress-tracker-mcp.js"],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    }
+  }
+}

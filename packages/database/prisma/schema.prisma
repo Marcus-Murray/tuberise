@@ -1,0 +1,319 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  image         String?
+  googleId      String?   @unique
+  emailVerified DateTime?
+  
+  // Subscription
+  subscription  Subscription?
+  subscriptionId String?   @unique
+  
+  // YouTube Integration
+  youtubeChannels YouTubeChannel[]
+  
+  // Notion Integration
+  notionWorkspaces NotionWorkspace[]
+  
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Audit fields
+  lastLoginAt   DateTime?
+  loginCount    Int       @default(0)
+  
+  @@map("users")
+}
+
+// Subscription Management
+model Subscription {
+  id                String              @id @default(cuid())
+  userId            String              @unique
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Stripe fields
+  stripeCustomerId  String?             @unique
+  stripeSubscriptionId String?          @unique
+  
+  // Plan details
+  plan              SubscriptionPlan    @default(STARTER)
+  status            SubscriptionStatus  @default(ACTIVE)
+  
+  // Billing
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean            @default(false)
+  
+  // Usage tracking
+  apiCallsUsed      Int                 @default(0)
+  apiCallsLimit     Int                 @default(1000)
+  
+  // Timestamps
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  @@map("subscriptions")
+}
+
+// YouTube Channel Data
+model YouTubeChannel {
+  id                String              @id @default(cuid())
+  userId            String
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // YouTube data
+  channelId         String              @unique
+  title             String
+  description       String?
+  thumbnailUrl      String?
+  subscriberCount   Int?
+  videoCount        Int?
+  viewCount         Int?
+  
+  // Access tokens
+  accessToken       String
+  refreshToken      String?
+  tokenExpiresAt    DateTime?
+  
+  // Sync settings
+  lastSyncAt        DateTime?
+  syncEnabled       Boolean             @default(true)
+  
+  // Analytics data
+  analytics         YouTubeAnalytics[]
+  videos            YouTubeVideo[]
+  
+  // Timestamps
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  @@map("youtube_channels")
+}
+
+// YouTube Analytics Data
+model YouTubeAnalytics {
+  id                String              @id @default(cuid())
+  channelId         String
+  channel           YouTubeChannel      @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  
+  // Metrics
+  views             Int                 @default(0)
+  subscribers       Int                 @default(0)
+  videos            Int                 @default(0)
+  estimatedMinutesWatched Int           @default(0)
+  averageViewDuration    Float          @default(0)
+  
+  // Engagement
+  likes             Int                 @default(0)
+  dislikes          Int                 @default(0)
+  comments          Int                 @default(0)
+  shares            Int                 @default(0)
+  
+  // Revenue (if available)
+  estimatedRevenue  Float?
+  
+  // Date range
+  date              DateTime
+  period            AnalyticsPeriod     @default(DAY)
+  
+  // Timestamps
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  @@unique([channelId, date, period])
+  @@map("youtube_analytics")
+}
+
+// YouTube Video Data
+model YouTubeVideo {
+  id                String              @id @default(cuid())
+  channelId         String
+  channel           YouTubeChannel      @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  
+  // YouTube data
+  videoId           String              @unique
+  title             String
+  description       String?
+  thumbnailUrl      String?
+  publishedAt       DateTime
+  
+  // Metrics
+  viewCount         Int                 @default(0)
+  likeCount         Int                 @default(0)
+  commentCount      Int                 @default(0)
+  duration          String?
+  
+  // AI Insights
+  aiInsights        AIInsight[]
+  
+  // Timestamps
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  @@map("youtube_videos")
+}
+
+// AI Insights
+model AIInsight {
+  id                String              @id @default(cuid())
+  videoId           String?
+  video             YouTubeVideo?       @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  channelId         String?
+  
+  // Insight data
+  type              InsightType
+  title             String
+  description       String
+  confidence        Float               // 0-1 confidence score
+  actionable        Boolean             @default(true)
+  
+  // AI metadata
+  model             String?             // AI model used
+  prompt            String?             // Prompt used for generation
+  
+  // User interaction
+  viewed            Boolean             @default(false)
+  dismissed         Boolean             @default(false)
+  rating            Int?                // User rating 1-5
+  
+  // Timestamps
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  @@map("ai_insights")
+}
+
+// Notion Integration
+model NotionWorkspace {
+  id                String              @id @default(cuid())
+  userId            String
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Notion data
+  workspaceId       String              @unique
+  name              String
+  icon              String?
+  
+  // Access tokens
+  accessToken       String
+  botId             String?
+  
+  // Sync settings
+  syncEnabled       Boolean             @default(true)
+  lastSyncAt        DateTime?
+  
+  // Templates
+  templates         NotionTemplate[]
+  
+  // Timestamps
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  @@map("notion_workspaces")
+}
+
+// Notion Templates
+model NotionTemplate {
+  id                String              @id @default(cuid())
+  workspaceId       String
+  workspace         NotionWorkspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  // Template data
+  name              String
+  description       String?
+  category          TemplateCategory
+  content           Json                // Template content structure
+  
+  // Usage tracking
+  usageCount        Int                 @default(0)
+  
+  // Timestamps
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  @@map("notion_templates")
+}
+
+// Audit Log
+model AuditLog {
+  id                String              @id @default(cuid())
+  
+  // User and action
+  userId            String?
+  action            String
+  resource          String?
+  resourceId        String?
+  
+  // Request details
+  ipAddress         String?
+  userAgent         String?
+  
+  // Metadata
+  metadata          Json?
+  
+  // Timestamps
+  createdAt         DateTime            @default(now())
+  
+  @@map("audit_logs")
+}
+
+// Enums
+enum SubscriptionPlan {
+  STARTER
+  PROFESSIONAL
+  AGENCY
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  UNPAID
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  TRIALING
+}
+
+enum AnalyticsPeriod {
+  DAY
+  WEEK
+  MONTH
+  YEAR
+}
+
+enum InsightType {
+  CONTENT_RECOMMENDATION
+  OPTIMAL_TIMING
+  TREND_ANALYSIS
+  COMPETITOR_INSIGHT
+  GROWTH_PREDICTION
+  ENGAGEMENT_OPTIMIZATION
+  AUDIENCE_INSIGHT
+  PERFORMANCE_ANALYSIS
+}
+
+enum TemplateCategory {
+  CONTENT_PLANNING
+  ANALYTICS_REPORT
+  PERFORMANCE_TRACKING
+  COMPETITOR_ANALYSIS
+  GROWTH_STRATEGY
+  AUDIENCE_RESEARCH
+}

@@ -1,0 +1,1175 @@
+# Tuberise Analytics - Development Rules
+
+## Project Overview
+
+This is a comprehensive SaaS platform for YouTube analytics with Notion integration, AI-powered insights, and compliance-first architecture.
+
+## Core Principles
+
+### 1. Compliance First
+
+- All features must be GDPR/CCPA compliant by design
+- Privacy and data protection are non-negotiable
+- Audit trails required for all data access
+- User consent must be explicit and granular
+
+### 2. Type Safety
+
+- TypeScript throughout the entire stack
+- No `any` types without explicit justification
+- Comprehensive type definitions for all APIs
+- Runtime validation with Zod
+
+### 3. Security by Design
+
+- OAuth 2.0 for all external integrations
+- End-to-end encryption for sensitive data
+- Rate limiting on all API endpoints
+- Security headers on all responses
+
+### 4. User Experience
+
+- Mobile-first responsive design
+- Accessibility (WCAG 2.1 AA) compliance
+- Performance: <2s page load times
+- Intuitive navigation and clear feedback
+
+## Technology Stack
+
+### Frontend
+
+- **Framework:** Next.js 14 with App Router
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **Components:** shadcn/ui + Radix UI
+- **State:** TanStack Query + Zustand
+
+### Backend
+
+- **Runtime:** Node.js with TypeScript
+- **Framework:** tRPC + Express.js
+- **Database:** PostgreSQL with Prisma ORM
+- **Auth:** Clerk (GDPR compliant)
+- **APIs:** YouTube Data API v3, Notion API
+
+### Development
+
+- **Monorepo:** npm workspaces
+- **Build:** Turbo
+- **Testing:** Vitest + Playwright
+- **Linting:** ESLint + Prettier
+- **Documentation:** Comprehensive project docs
+
+## Code Standards
+
+### File Organization
+
+```
+src/
+├── app/              # Next.js App Router pages
+├── components/       # React components
+│   ├── ui/          # Base UI components
+│   ├── analytics/   # Analytics-specific components
+│   └── forms/       # Form components
+├── lib/             # Utility functions
+├── hooks/           # Custom React hooks
+├── stores/          # State management
+└── types/           # TypeScript types
+```
+
+### Naming Conventions
+
+- **Files:** kebab-case (e.g., `user-profile.tsx`)
+- **Components:** PascalCase (e.g., `UserProfile`)
+- **Functions:** camelCase (e.g., `getUserData`)
+- **Constants:** UPPER_SNAKE_CASE (e.g., `API_BASE_URL`)
+- **Types:** PascalCase with descriptive names (e.g., `UserProfileData`)
+
+### Component Standards
+
+```typescript
+// Component template
+interface ComponentProps {
+  // Props with JSDoc comments
+  title: string;
+  data: AnalyticsData[];
+  onAction?: (id: string) => void;
+}
+
+/**
+ * Component description
+ * @param props - Component props
+ */
+export function Component({ title, data, onAction }: ComponentProps) {
+  // Hooks at the top
+  const [state, setState] = useState();
+
+  // Event handlers
+  const handleClick = useCallback(() => {
+    onAction?.('example');
+  }, [onAction]);
+
+  // Render
+  return <div>{/* JSX with clear structure */}</div>;
+}
+```
+
+### API Standards
+
+```typescript
+// API route template
+export async function GET(request: NextRequest) {
+  try {
+    // Input validation
+    const { searchParams } = new URL(request.url);
+    const channelId = searchParams.get('channelId');
+
+    if (!channelId) {
+      return NextResponse.json(
+        { error: 'Channel ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // Business logic
+    const data = await getChannelAnalytics(channelId);
+
+    // Response
+    return NextResponse.json({ data });
+  } catch (error) {
+    // Error handling
+    console.error('API Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+## Testing Requirements
+
+### Unit Tests
+
+- 90%+ code coverage required
+- Test all business logic functions
+- Mock external dependencies
+- Use descriptive test names
+
+### Integration Tests
+
+- Test API endpoints
+- Test database interactions
+- Test external API integrations
+- Test authentication flows
+
+### E2E Tests
+
+- Critical user journeys
+- Cross-browser compatibility
+- Mobile responsiveness
+- Performance benchmarks
+
+## Documentation Requirements
+
+### Code Documentation
+
+- JSDoc comments for all public functions
+- README files for complex modules
+- Type definitions for all interfaces
+- API documentation for all endpoints
+
+### Project Documentation
+
+- Keep `project-docs/` directory updated
+- Document all architectural decisions
+- Update timeline and progress regularly
+- Maintain clear user guides
+
+## Security Requirements
+
+### Data Protection
+
+- Encrypt sensitive data at rest and in transit
+- Implement proper access controls
+- Log all data access for audit trails
+- Regular security audits
+
+### API Security
+
+- Rate limiting on all endpoints
+- Input validation and sanitization
+- CORS configuration
+- Security headers (Helmet)
+
+### Authentication
+
+- OAuth 2.0 for external services
+- JWT tokens with proper expiration
+- Session management
+- Role-based access control
+
+## Performance Requirements
+
+### Frontend Performance
+
+- Page load times < 2 seconds
+- First Contentful Paint < 1.5 seconds
+- Largest Contentful Paint < 2.5 seconds
+- Cumulative Layout Shift < 0.1
+
+### Backend Performance
+
+- API response times < 200ms
+- Database query optimization
+- Efficient caching strategies
+- Proper error handling
+
+## Compliance Requirements
+
+### GDPR Compliance
+
+- Data minimization principles
+- User consent management
+- Right to access, rectification, erasure
+- Data portability
+- Privacy by design
+
+### API Compliance
+
+- YouTube API v3 Developer Policies
+- Notion API Terms of Service
+- Rate limiting and quota management
+- Proper error handling
+
+### Accessibility
+
+- WCAG 2.1 AA compliance
+- Keyboard navigation support
+- Screen reader compatibility
+- Color contrast requirements
+
+## Development Workflow
+
+### Git Workflow
+
+- Feature branches for all changes
+- Descriptive commit messages
+- Pull request reviews required
+- Automated testing on all PRs
+
+### Code Review
+
+- All code must be reviewed
+- Security review for sensitive changes
+- Performance review for critical paths
+- Documentation review for new features
+
+### Deployment
+
+- Staging environment for testing
+- Production deployment with monitoring
+- Rollback procedures documented
+- Health checks implemented
+
+## Error Handling
+
+### Frontend Errors
+
+```typescript
+// Error boundary implementation
+class ErrorBoundary extends React.Component {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // Log error to monitoring service
+    console.error('Frontend Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <ErrorFallback />;
+    }
+    return this.props.children;
+  }
+}
+```
+
+### Backend Errors
+
+```typescript
+// Centralized error handling
+export function handleApiError(error: unknown) {
+  console.error('API Error:', error);
+
+  if (error instanceof ValidationError) {
+    return { status: 400, message: error.message };
+  }
+
+  if (error instanceof AuthenticationError) {
+    return { status: 401, message: 'Unauthorized' };
+  }
+
+  return { status: 500, message: 'Internal server error' };
+}
+```
+
+## Monitoring and Logging
+
+### Application Monitoring
+
+- Error tracking with Sentry
+- Performance monitoring
+- User analytics
+- API usage tracking
+
+### Logging Standards
+
+- Structured logging with JSON format
+- Log levels: ERROR, WARN, INFO, DEBUG
+- Include correlation IDs for tracing
+- No sensitive data in logs
+
+## Deployment and Infrastructure
+
+### Environment Management
+
+- Development, staging, production environments
+- Environment-specific configurations
+- Secrets management
+- Database migrations
+
+### CI/CD Pipeline
+
+- Automated testing
+- Code quality checks
+- Security scanning
+- Automated deployment
+
+## Emergency Procedures
+
+### Security Incidents
+
+1. Immediate containment
+2. Assessment of impact
+3. User notification if required
+4. Documentation of incident
+5. Post-incident review
+
+### Performance Issues
+
+1. Monitor system metrics
+2. Identify bottlenecks
+3. Implement temporary fixes
+4. Plan permanent solutions
+5. Update monitoring
+
+## Contact Information
+
+### Development Team
+
+- **Lead Developer:** [Contact Info]
+- **Product Manager:** [Contact Info]
+- **Security Lead:** [Contact Info]
+
+### Escalation Procedures
+
+- **Level 1:** Development team
+- **Level 2:** Technical lead
+- **Level 3:** Product owner
+- **Level 4:** Executive team
+
+## Response Quality Evaluation
+
+### Self-Evaluation Framework
+
+After providing any response, I must evaluate its quality using the following framework:
+
+#### Fields to Evaluate:
+
+- **reflections**: Critique and reflections on the sufficiency, superfluency, and general quality of the response
+- **score**: Score from 0-10 on the quality of the candidate response
+- **found_solution**: Whether the response has fully solved the question or task
+
+#### Evaluation Criteria:
+
+1. **Accuracy**: Does the response correctly address the question or task?
+2. **Completeness**: Does it cover all aspects of the question or task?
+3. **Clarity**: Is the response easy to understand?
+4. **Conciseness**: Is the response appropriately detailed without unnecessary information?
+5. **Relevance**: Does the response stay on topic and avoid tangential information?
+
+#### Implementation:
+
+- Provide thoughtful reflections on these aspects and any other relevant factors
+- Use the score to indicate the overall quality (0-10 scale)
+- Set found_solution to true only if the response fully addresses the question or completes the task
+- Normalize score to float between 0 and 1 when needed
+
+#### Example Evaluation Format:
+
+```
+reflections: "The response was clear and concise, addressing all aspects of the user's request. However, it could have provided more specific examples."
+score: 8
+found_solution: true
+```
+
+## Batch File Processing and Data Organization
+
+### Expert Guidelines for File Processing and Content Categorization
+
+#### Key Principles
+
+- Analyze file content systematically and extract structured information
+- Create meaningful categorizations based on content analysis
+- Maintain data consistency across different files
+- Implement efficient processing workflows
+- Document the process and decisions made
+
+#### File Processing Guidelines
+
+##### 1. Initial File Analysis
+
+- Read and understand the file structure and format
+- Identify key information patterns (tags, titles, descriptions)
+- Document the common elements across files
+- Create a standardized data model for extracted information
+
+##### 2. Information Extraction
+
+- Extract metadata (title, tags, description) from each file
+- Validate the extracted information for consistency
+- Handle missing or incomplete information gracefully
+- Maintain the original information hierarchy
+
+##### 3. Content Organization
+
+- Create a unified index of all processed files
+- Implement a flexible mapping structure for quick lookups
+- Ensure bi-directional relationships between related items
+- Support multiple categorization schemes
+
+##### 4. Categorization Strategy
+
+- Analyze content patterns and relationships
+- Create primary and secondary categorization levels
+- Consider user navigation and discovery needs
+- Allow for future expansion and reorganization
+- Document category definitions and criteria
+
+##### 5. Implementation Steps
+
+**a. File Processing**
+
+- Read each file's content
+- Parse structured data (title, tags, description)
+- Validate and normalize extracted data
+- Create standardized data objects
+
+**b. Index Creation**
+
+- Build a master list of all files
+- Create lookup maps for quick access
+- Generate unique identifiers if needed
+- Implement efficient search capabilities
+
+**c. Category Assignment**
+
+- Analyze file content and metadata
+- Identify primary categories
+- Create category hierarchies
+- Assign files to appropriate categories
+- Handle multi-category assignments
+
+**d. Validation and Quality Control**
+
+- Verify all files are processed
+- Check for categorization consistency
+- Validate cross-references
+- Ensure no orphaned entries
+
+##### 6. Documentation Requirements
+
+- Document the processing workflow
+- Explain categorization decisions
+- Provide category definitions
+- Include file processing statistics
+- Note any special cases or exceptions
+
+##### 7. Maintenance Considerations
+
+- Plan for adding new files
+- Consider category reorganization needs
+- Document update procedures
+- Implement version control
+- Plan for scaling
+
+#### Best Practices
+
+##### File Processing
+
+- Use consistent naming conventions
+- Implement error handling
+- Log processing steps
+- Create backup procedures
+
+##### Categorization
+
+- Use clear category names
+- Maintain category descriptions
+- Allow for flexibility
+- Document category criteria
+
+##### Code Organization
+
+- Modular processing functions
+- Clear separation of concerns
+- Consistent error handling
+- Comprehensive logging
+
+##### Quality Assurance
+
+- Validate all processed data
+- Check category assignments
+- Verify file completeness
+- Test edge cases
+
+#### Example Implementation
+
+```typescript
+// File processing interface
+interface RuleFile {
+  file: string;
+  title: string;
+  tags: string[];
+  description: string;
+}
+
+// Category interface
+interface Category {
+  name: string;
+  description: string;
+  files: string[];
+}
+
+// Process files and create categories
+function processRuleFiles(files: RuleFile[]): Record<string, Category> {
+  // Initialize categories
+  const categories: Record<string, Category> = {};
+
+  // Process each file
+  files.forEach((file) => {
+    // Analyze content and determine categories
+    const fileCategories = determineCategories(file);
+
+    // Assign to categories
+    fileCategories.forEach((category) => {
+      if (!categories[category]) {
+        categories[category] = {
+          name: formatCategoryName(category),
+          description: generateDescription(category),
+          files: [],
+        };
+      }
+      categories[category].files.push(file.file);
+    });
+  });
+
+  return categories;
+}
+
+// Helper functions
+function determineCategories(file: RuleFile): string[] {
+  // Analyze file content and tags to determine categories
+  const categories = new Set<string>();
+
+  // Add categories based on tags
+  file.tags.forEach((tag) => {
+    const category = mapTagToCategory(tag);
+    if (category) categories.add(category);
+  });
+
+  // Analyze description for additional categories
+  const descriptionCategories = analyzeDescription(file.description);
+  descriptionCategories.forEach((category) => categories.add(category));
+
+  return Array.from(categories);
+}
+```
+
+#### Error Handling
+
+- Implement comprehensive error checking
+- Log processing errors
+- Provide meaningful error messages
+- Create recovery procedures
+- Document error handling steps
+
+#### Monitoring and Reporting
+
+- Track processing statistics
+- Monitor category growth
+- Report processing errors
+- Generate summary reports
+- Document system status
+
+#### Future Considerations
+
+- Plan for scaling
+- Consider automation needs
+- Document enhancement requests
+- Plan for maintenance
+- Consider user feedback
+
+## UI and UX Design Principles
+
+### Expert Guidelines for Software Development UI/UX
+
+#### Visual Design
+
+- Establish a clear visual hierarchy to guide user attention
+- Choose a cohesive color palette that reflects the brand (ask the user for guidelines)
+- Use typography effectively for readability and emphasis
+- Maintain sufficient contrast for legibility (WCAG 2.1 AA standard)
+- Design with a consistent style across the application
+
+#### Interaction Design
+
+- Create intuitive navigation patterns
+- Use familiar UI components to reduce cognitive load
+- Provide clear calls-to-action to guide user behavior
+- Implement responsive design for cross-device compatibility
+- Use animations judiciously to enhance user experience
+
+#### Accessibility
+
+- Follow WCAG guidelines for web accessibility
+- Use semantic HTML to enhance screen reader compatibility
+- Provide alternative text for images and non-text content
+- Ensure keyboard navigability for all interactive elements
+- Test with various assistive technologies
+
+#### Performance Optimization
+
+- Optimize images and assets to minimize load times
+- Implement lazy loading for non-critical resources
+- Use code splitting to improve initial load performance
+- Monitor and optimize Core Web Vitals (LCP, FID, CLS)
+
+#### User Feedback
+
+- Incorporate clear feedback mechanisms for user actions
+- Use loading indicators for asynchronous operations
+- Provide clear error messages and recovery options
+- Implement analytics to track user behavior and pain points
+
+#### Information Architecture
+
+- Organize content logically to facilitate easy access
+- Use clear labeling and categorization for navigation
+- Implement effective search functionality
+- Create a sitemap to visualize overall structure
+
+#### Mobile-First Design
+
+- Design for mobile devices first, then scale up
+- Use touch-friendly interface elements
+- Implement gestures for common actions (swipe, pinch-to-zoom)
+- Consider thumb zones for important interactive elements
+
+#### Consistency
+
+- Develop and adhere to a design system
+- Use consistent terminology throughout the interface
+- Maintain consistent positioning of recurring elements
+- Ensure visual consistency across different sections
+
+#### Testing and Iteration
+
+- Conduct A/B testing for critical design decisions
+- Use heatmaps and session recordings to analyze user behavior
+- Regularly gather and incorporate user feedback
+- Continuously iterate on designs based on data and feedback
+
+#### Documentation
+
+- Maintain a comprehensive style guide
+- Document design patterns and component usage
+- Create user flow diagrams for complex interactions
+- Keep design assets organized and accessible to the team
+
+#### Responsive Design Principles
+
+##### Fluid Layouts
+
+- Use relative units (%, em, rem) instead of fixed pixels
+- Implement CSS Grid and Flexbox for flexible layouts
+- Design with a mobile-first approach, then scale up
+
+##### Media Queries
+
+- Use breakpoints to adjust layouts for different screen sizes
+- Focus on content needs rather than specific devices
+- Test designs across a range of devices and orientations
+
+##### Images and Media
+
+- Use responsive images with srcset and sizes attributes
+- Implement lazy loading for images and videos
+- Use CSS to make embedded media (like iframes) responsive
+
+##### Typography
+
+- Use relative units (em, rem) for font sizes
+- Adjust line heights and letter spacing for readability on small screens
+- Implement a modular scale for consistent typography across breakpoints
+
+##### Touch Targets
+
+- Ensure interactive elements are large enough for touch (min 44x44 pixels)
+- Provide adequate spacing between touch targets
+- Consider hover states for desktop and focus states for touch/keyboard
+
+##### Performance
+
+- Optimize assets for faster loading on mobile networks
+- Use CSS animations instead of JavaScript when possible
+- Implement critical CSS for above-the-fold content
+
+##### Content Prioritization
+
+- Prioritize content display for mobile views
+- Use progressive disclosure to reveal content as needed
+- Implement off-canvas patterns for secondary content on small screens
+
+##### Navigation
+
+- Design mobile-friendly navigation patterns (e.g., hamburger menu)
+- Ensure navigation is accessible via keyboard and screen readers
+- Consider using a sticky header for easy navigation access
+
+##### Forms
+
+- Design form layouts that adapt to different screen sizes
+- Use appropriate input types for better mobile experiences
+- Implement inline validation and clear error messaging
+
+##### Testing
+
+- Use browser developer tools to test responsiveness
+- Test on actual devices, not just emulators
+- Conduct usability testing across different device types
+
+#### Best Practices
+
+- Stay updated with the latest responsive design techniques and browser capabilities
+- Refer to industry-standard guidelines and stay updated with latest UI/UX trends and best practices
+- Maintain consistency with established design patterns
+- Prioritize user experience over aesthetic preferences
+- Test designs with real users whenever possible
+
+## Expert Development Guidelines
+
+### TypeScript, Node.js, Next.js 14, React, Supabase, GraphQL, and UI Frameworks
+
+#### Key Principles
+
+- Write concise, technical responses with accurate TypeScript examples
+- Use functional, declarative programming. Avoid classes
+- Prefer iteration and modularization over duplication
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError)
+- Use lowercase with dashes for directories (e.g., components/auth-wizard)
+- Favor named exports for components
+- Use the Receive an Object, Return an Object (RORO) pattern
+
+#### JavaScript/TypeScript
+
+- Use "function" keyword for pure functions. Omit semicolons
+- Use TypeScript for all code. Prefer interfaces over types
+- File structure: Exported component, subcomponents, helpers, static content, types
+- Avoid unnecessary curly braces in conditional statements
+- For single-line statements in conditionals, omit curly braces
+- Use concise, one-line syntax for simple conditional statements (e.g., if (condition) doSomething())
+
+#### Error Handling and Validation
+
+- Prioritize error handling and edge cases:
+  - Handle errors and edge cases at the beginning of functions
+  - Use early returns for error conditions to avoid deeply nested if statements
+  - Place the happy path last in the function for improved readability
+  - Avoid unnecessary else statements; use if-return pattern instead
+  - Use guard clauses to handle preconditions and invalid states early
+  - Implement proper error logging and user-friendly error messages
+  - Consider using custom error types or error factories for consistent error handling
+
+#### AI SDK
+
+- Use the Vercel AI SDK UI for implementing streaming chat UI
+- Use the Vercel AI SDK Core to interact with language models
+- Use the Vercel AI SDK RSC and Stream Helpers to stream and help with the generations
+- Implement proper error handling for AI responses and model switching
+- Implement fallback mechanisms for when an AI model is unavailable
+- Handle rate limiting and quota exceeded scenarios gracefully
+- Provide clear error messages to users when AI interactions fail
+- Implement proper input sanitization for user messages before sending to AI models
+- Use environment variables for storing API keys and sensitive information
+
+#### React/Next.js
+
+- Use functional components and TypeScript interfaces
+- Use declarative JSX
+- Use function, not const, for components
+- Use Shadcn UI, Radix, and Tailwind CSS for components and styling
+- Implement responsive design with Tailwind CSS
+- Use mobile-first approach for responsive design
+- Place static content and interfaces at file end
+- Use content variables for static content outside render functions
+- Minimize 'use client', 'useEffect', and 'setState'. Favor React Server Components (RSC)
+- Use Zod for form validation
+- Wrap client components in Suspense with fallback
+- Use dynamic loading for non-critical components
+- Optimize images: WebP format, size data, lazy loading
+- Model expected errors as return values: Avoid using try/catch for expected errors in Server Actions
+- Use error boundaries for unexpected errors: Implement error boundaries using error.tsx and global-error.tsx files
+- Use useActionState with react-hook-form for form validation
+- Code in services/ dir always throw user-friendly errors that can be caught and shown to the user
+- Use next-safe-action for all server actions
+- Implement type-safe server actions with proper validation
+- Handle errors gracefully and return appropriate responses
+
+#### Supabase and GraphQL
+
+- Use the Supabase client for database interactions and real-time subscriptions
+- Implement Row Level Security (RLS) policies for fine-grained access control
+- Use Supabase Auth for user authentication and management
+- Leverage Supabase Storage for file uploads and management
+- Use Supabase Edge Functions for serverless API endpoints when needed
+- Use the generated GraphQL client (Genql) for type-safe API interactions with Supabase
+- Optimize GraphQL queries to fetch only necessary data
+- Use Genql queries for fetching large datasets efficiently
+- Implement proper authentication and authorization using Supabase RLS and Policies
+
+#### Key Conventions
+
+1. Rely on Next.js App Router for state changes and routing
+2. Prioritize Web Vitals (LCP, CLS, FID)
+3. Minimize 'use client' usage:
+   - Prefer server components and Next.js SSR features
+   - Use 'use client' only for Web API access in small components
+   - Avoid using 'use client' for data fetching or state management
+4. Follow the monorepo structure:
+   - Place shared code in the 'packages' directory
+   - Keep app-specific code in the 'apps' directory
+5. Use Taskfile commands for development and deployment tasks
+6. Adhere to the defined database schema and use enum tables for predefined values
+
+#### Naming Conventions
+
+- Booleans: Use auxiliary verbs such as 'does', 'has', 'is', and 'should' (e.g., isDisabled, hasError)
+- Filenames: Use lowercase with dash separators (e.g., auth-wizard.tsx)
+- File extensions: Use .config.ts, .test.ts, .context.tsx, .type.ts, .hook.ts as appropriate
+
+#### Component Structure
+
+- Break down components into smaller parts with minimal props
+- Suggest micro folder structure for components
+- Use composition to build complex components
+- Follow the order: component declaration, styled components (if any), TypeScript types
+
+#### Data Fetching and State Management
+
+- Use React Server Components for data fetching when possible
+- Implement the preload pattern to prevent waterfalls
+- Leverage Supabase for real-time data synchronization and state management
+- Use Vercel KV for chat history, rate limiting, and session storage when appropriate
+
+#### Styling
+
+- Use Tailwind CSS for styling, following the Utility First approach
+- Utilize the Class Variance Authority (CVA) for managing component variants
+
+#### Testing
+
+- Implement unit tests for utility functions and hooks
+- Use integration tests for complex components and pages
+- Implement end-to-end tests for critical user flows
+- Use Supabase local development for testing database interactions
+
+#### Accessibility
+
+- Ensure interfaces are keyboard navigable
+- Implement proper ARIA labels and roles for components
+- Ensure color contrast ratios meet WCAG standards for readability
+
+#### Documentation
+
+- Provide clear and concise comments for complex logic
+- Use JSDoc comments for functions and components to improve IDE intellisense
+- Keep the README files up-to-date with setup instructions and project overview
+- Document Supabase schema, RLS policies, and Edge Functions when used
+
+#### Reference Documentation
+
+- Refer to Next.js documentation for Data Fetching, Rendering, and Routing best practices
+- Refer to the Vercel AI SDK documentation and OpenAI/Anthropic API guidelines for best practices in AI integration
+
+## Chrome Extension Development Expertise
+
+### Expert Guidelines for Browser Extension Development
+
+#### Code Style and Structure
+
+- Write clear, modular TypeScript code with proper type definitions
+- Follow functional programming patterns; avoid classes
+- Use descriptive variable names (e.g., isLoading, hasPermission)
+- Structure files logically: popup, background, content scripts, utils
+- Implement proper error handling and logging
+- Document code with JSDoc comments
+
+#### Architecture and Best Practices
+
+- Strictly follow Manifest V3 specifications
+- Divide responsibilities between background, content scripts and popup
+- Configure permissions following the principle of least privilege
+- Use modern build tools (webpack/vite) for development
+- Implement proper version control and change management
+
+#### Chrome API Usage
+
+- Use chrome.\* APIs correctly (storage, tabs, runtime, etc.)
+- Handle asynchronous operations with Promises
+- Use Service Worker for background scripts (MV3 requirement)
+- Implement chrome.alarms for scheduled tasks
+- Use chrome.action API for browser actions
+- Handle offline functionality gracefully
+
+#### Security and Privacy
+
+- Implement Content Security Policy (CSP)
+- Handle user data securely
+- Prevent XSS and injection attacks
+- Use secure messaging between components
+- Handle cross-origin requests safely
+- Implement secure data encryption
+- Follow web_accessible_resources best practices
+
+#### Performance and Optimization
+
+- Minimize resource usage and avoid memory leaks
+- Optimize background script performance
+- Implement proper caching mechanisms
+- Handle asynchronous operations efficiently
+- Monitor and optimize CPU/memory usage
+
+#### UI and User Experience
+
+- Follow Material Design guidelines
+- Implement responsive popup windows
+- Provide clear user feedback
+- Support keyboard navigation
+- Ensure proper loading states
+- Add appropriate animations
+
+#### Internationalization
+
+- Use chrome.i18n API for translations
+- Follow \_locales structure
+- Support RTL languages
+- Handle regional formats
+
+#### Accessibility
+
+- Implement ARIA labels
+- Ensure sufficient color contrast
+- Support screen readers
+- Add keyboard shortcuts
+
+#### Testing and Debugging
+
+- Use Chrome DevTools effectively
+- Write unit and integration tests
+- Test cross-browser compatibility
+- Monitor performance metrics
+- Handle error scenarios
+
+#### Publishing and Maintenance
+
+- Prepare store listings and screenshots
+- Write clear privacy policies
+- Implement update mechanisms
+- Handle user feedback
+- Maintain documentation
+
+#### Follow Official Documentation
+
+- Refer to Chrome Extension documentation
+- Stay updated with Manifest V3 changes
+- Follow Chrome Web Store guidelines
+- Monitor Chrome platform updates
+
+#### Output Expectations
+
+- Provide clear, working code examples
+- Include necessary error handling
+- Follow security best practices
+- Ensure cross-browser compatibility
+- Write maintainable and scalable code
+
+## AI-Assisted Development Rules
+
+### Guidelines for AI Programming Integration
+
+#### AI Prompt Engineering
+
+- Write clear, specific prompts with explicit requirements
+- Provide context about the project structure and coding standards
+- Include examples of desired output format and style
+- Break down complex tasks into smaller, manageable prompts
+- Use consistent terminology and naming conventions in prompts
+- Specify file paths, function names, and variable names explicitly
+- Include error handling requirements in all prompts
+- Request code comments and documentation in prompts
+
+#### AI Code Review
+
+- Always review AI-generated code for security vulnerabilities
+- Verify that generated code follows project coding standards
+- Check for proper error handling and edge cases
+- Ensure generated code is optimized for performance
+- Validate that code integrates correctly with existing codebase
+- Test AI-generated code thoroughly before integration
+- Review generated code for accessibility compliance
+- Verify that generated code follows responsive design principles
+
+#### AI Context Management
+
+- Maintain consistent context across AI interactions
+- Provide relevant file references and dependencies
+- Include current project state and recent changes
+- Share relevant error messages and debugging information
+- Keep track of AI-generated code patterns and preferences
+- Document AI-assisted development decisions
+- Maintain version control of AI-generated code
+- Use consistent naming conventions for AI-generated components
+
+#### AI Error Handling
+
+- Implement fallback mechanisms for AI service failures
+- Handle rate limiting and quota exceeded scenarios gracefully
+- Provide clear error messages when AI interactions fail
+- Log AI-related errors for debugging and improvement
+- Implement retry mechanisms for transient AI failures
+- Validate AI responses before processing
+- Handle malformed or incomplete AI responses
+- Implement user-friendly error recovery flows
+
+## Project-Specific Rules
+
+### Tuberise Analytics SaaS Development Standards
+
+#### SaaS Development Rules
+
+- Implement multi-tenant architecture with proper data isolation
+- Design for horizontal scalability and load balancing
+- Implement comprehensive user management and role-based access control
+- Use microservices architecture for service separation
+- Implement proper API versioning and backward compatibility
+- Design for high availability and disaster recovery
+- Implement comprehensive monitoring and logging
+- Use infrastructure as code for deployment automation
+
+#### Analytics Platform Rules
+
+- Implement real-time data processing capabilities
+- Design efficient data aggregation and caching strategies
+- Use appropriate data visualization libraries and frameworks
+- Implement proper data validation and sanitization
+- Design for data privacy and compliance requirements
+- Implement comprehensive data export and import capabilities
+- Use proper data modeling for analytics workloads
+- Implement efficient query optimization and indexing
+
+#### API Integration Rules
+
+- Implement proper rate limiting and quota management
+- Use OAuth 2.0 for secure third-party integrations
+- Implement comprehensive error handling for API failures
+- Use proper API authentication and authorization
+- Implement retry mechanisms with exponential backoff
+- Monitor API usage and performance metrics
+- Implement proper data validation for API responses
+- Use webhook patterns for real-time data synchronization
+
+#### Compliance-First Development
+
+- Implement GDPR compliance by design
+- Ensure CCPA compliance for California users
+- Implement proper data encryption at rest and in transit
+- Design for data portability and user rights
+- Implement comprehensive audit logging
+- Use privacy-preserving analytics techniques
+- Implement proper consent management
+- Design for data minimization and purpose limitation
+
+## Development Workflow Rules
+
+### AI-Enhanced Development Processes
+
+#### Code Generation Standards
+
+- Use consistent prompt templates for similar tasks
+- Specify coding style and formatting requirements in prompts
+- Include test case requirements in code generation prompts
+- Request documentation and comments for all generated code
+- Specify error handling patterns and edge cases
+- Include performance optimization requirements
+- Request accessibility compliance in UI code generation
+- Specify responsive design requirements for frontend code
+
+#### Testing with AI
+
+- Generate comprehensive unit tests for all AI-generated code
+- Use AI to create integration test scenarios
+- Implement AI-assisted end-to-end test generation
+- Use AI for test data generation and mocking
+- Implement AI-assisted performance testing
+- Use AI for security testing and vulnerability scanning
+- Generate accessibility tests for UI components
+- Implement AI-assisted regression testing
+
+#### Documentation with AI
+
+- Use AI to generate comprehensive API documentation
+- Create user guides and tutorials with AI assistance
+- Generate code comments and inline documentation
+- Use AI for creating architecture diagrams and flowcharts
+- Implement AI-assisted README generation
+- Use AI for creating deployment and setup guides
+- Generate troubleshooting guides with AI
+- Create compliance and security documentation
+
+#### Refactoring with AI
+
+- Use AI to identify code smells and improvement opportunities
+- Implement AI-assisted code optimization
+- Use AI for dependency updates and migration assistance
+- Implement AI-assisted security vulnerability fixes
+- Use AI for performance optimization suggestions
+- Implement AI-assisted accessibility improvements
+- Use AI for code standardization and consistency
+- Implement AI-assisted legacy code modernization
+
+#### Quality Assurance with AI
+
+- Use AI for code review and quality assessment
+- Implement AI-assisted bug detection and fixing
+- Use AI for security vulnerability scanning
+- Implement AI-assisted performance profiling
+- Use AI for compliance checking and validation
+- Implement AI-assisted user experience testing
+- Use AI for cross-browser compatibility testing
+- Implement AI-assisted accessibility auditing
+
+---
+
+**Last Updated:** 2025-10-05
+**Version:** 1.0
+**Next Review:** 2025-10-12
