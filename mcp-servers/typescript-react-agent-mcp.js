@@ -31,18 +31,25 @@ class TypeScriptReactAgentMCPServer {
 
   setupToolHandlers() {
     // Store project information in memory
-    this.server.setRequestHandler('ts-react-agent/store-memory', async (args) => {
+    this.server.setRequestHandler('ts-react-agent/store-memory', async args => {
       const schema = z.object({
         key: z.string(),
         value: z.any(),
-        category: z.enum(['project', 'component', 'pattern', 'issue', 'solution']).default('project'),
+        category: z
+          .enum(['project', 'component', 'pattern', 'issue', 'solution'])
+          .default('project'),
         metadata: z.object({}).optional(),
       });
       const validated = schema.parse(args);
 
       try {
-        this.storeInMemory(validated.key, validated.value, validated.category, validated.metadata);
-        
+        this.storeInMemory(
+          validated.key,
+          validated.value,
+          validated.category,
+          validated.metadata
+        );
+
         return {
           success: true,
           message: `Stored ${validated.key} in ${validated.category} memory bank`,
@@ -58,250 +65,308 @@ class TypeScriptReactAgentMCPServer {
     });
 
     // Retrieve information from memory
-    this.server.setRequestHandler('ts-react-agent/retrieve-memory', async (args) => {
-      const schema = z.object({
-        key: z.string().optional(),
-        category: z.enum(['project', 'component', 'pattern', 'issue', 'solution']).optional(),
-        search: z.string().optional(),
-      });
-      const validated = schema.parse(args);
+    this.server.setRequestHandler(
+      'ts-react-agent/retrieve-memory',
+      async args => {
+        const schema = z.object({
+          key: z.string().optional(),
+          category: z
+            .enum(['project', 'component', 'pattern', 'issue', 'solution'])
+            .optional(),
+          search: z.string().optional(),
+        });
+        const validated = schema.parse(args);
 
-      try {
-        const results = this.retrieveFromMemory(validated.key, validated.category, validated.search);
-        
-        return {
-          success: true,
-          results,
-          count: results.length,
-          timestamp: new Date().toISOString(),
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        };
+        try {
+          const results = this.retrieveFromMemory(
+            validated.key,
+            validated.category,
+            validated.search
+          );
+
+          return {
+            success: true,
+            results,
+            count: results.length,
+            timestamp: new Date().toISOString(),
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString(),
+          };
+        }
       }
-    });
+    );
 
     // Analyze TypeScript project structure
-    this.server.setRequestHandler('ts-react-agent/analyze-project', async (args) => {
-      const schema = z.object({
-        path: z.string().optional(),
-        includeMetrics: z.array(z.string()).optional(),
-      });
-      const validated = schema.parse(args);
-
-      try {
-        const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.path ? path.resolve(projectRoot, validated.path) : projectRoot;
-        
-        const analysis = await this.analyzeTypeScriptProject(targetPath, validated.includeMetrics);
-        
-        // Store analysis in memory
-        this.storeInMemory('project-analysis', analysis, 'project', {
-          path: targetPath,
-          timestamp: new Date().toISOString(),
+    this.server.setRequestHandler(
+      'ts-react-agent/analyze-project',
+      async args => {
+        const schema = z.object({
+          path: z.string().optional(),
+          includeMetrics: z.array(z.string()).optional(),
         });
-        
-        return {
-          success: true,
-          analysis,
-          timestamp: new Date().toISOString(),
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        };
+        const validated = schema.parse(args);
+
+        try {
+          const projectRoot = path.resolve(__dirname, '..');
+          const targetPath = validated.path
+            ? path.resolve(projectRoot, validated.path)
+            : projectRoot;
+
+          const analysis = await this.analyzeTypeScriptProject(
+            targetPath,
+            validated.includeMetrics
+          );
+
+          // Store analysis in memory
+          this.storeInMemory('project-analysis', analysis, 'project', {
+            path: targetPath,
+            timestamp: new Date().toISOString(),
+          });
+
+          return {
+            success: true,
+            analysis,
+            timestamp: new Date().toISOString(),
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString(),
+          };
+        }
       }
-    });
+    );
 
     // Generate React component suggestions
-    this.server.setRequestHandler('ts-react-agent/suggest-components', async (args) => {
-      const schema = z.object({
-        requirements: z.string(),
-        context: z.string().optional(),
-        componentType: z.enum(['functional', 'class', 'hook', 'context']).default('functional'),
-      });
-      const validated = schema.parse(args);
-
-      try {
-        const suggestions = await this.generateComponentSuggestions(
-          validated.requirements,
-          validated.context,
-          validated.componentType
-        );
-        
-        // Store suggestions in memory
-        this.storeInMemory(`component-suggestions-${Date.now()}`, suggestions, 'component', {
-          requirements: validated.requirements,
-          componentType: validated.componentType,
+    this.server.setRequestHandler(
+      'ts-react-agent/suggest-components',
+      async args => {
+        const schema = z.object({
+          requirements: z.string(),
+          context: z.string().optional(),
+          componentType: z
+            .enum(['functional', 'class', 'hook', 'context'])
+            .default('functional'),
         });
-        
-        return {
-          success: true,
-          suggestions,
-          timestamp: new Date().toISOString(),
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        };
+        const validated = schema.parse(args);
+
+        try {
+          const suggestions = await this.generateComponentSuggestions(
+            validated.requirements,
+            validated.context,
+            validated.componentType
+          );
+
+          // Store suggestions in memory
+          this.storeInMemory(
+            `component-suggestions-${Date.now()}`,
+            suggestions,
+            'component',
+            {
+              requirements: validated.requirements,
+              componentType: validated.componentType,
+            }
+          );
+
+          return {
+            success: true,
+            suggestions,
+            timestamp: new Date().toISOString(),
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString(),
+          };
+        }
       }
-    });
+    );
 
     // Optimize TypeScript code
-    this.server.setRequestHandler('ts-react-agent/optimize-code', async (args) => {
-      const schema = z.object({
-        code: z.string(),
-        optimizationType: z.enum(['performance', 'readability', 'type-safety', 'patterns']).default('performance'),
-        context: z.string().optional(),
-      });
-      const validated = schema.parse(args);
-
-      try {
-        const optimization = await this.optimizeTypeScriptCode(
-          validated.code,
-          validated.optimizationType,
-          validated.context
-        );
-        
-        // Store optimization in memory
-        this.storeInMemory(`optimization-${Date.now()}`, optimization, 'solution', {
-          optimizationType: validated.optimizationType,
-          originalCode: validated.code,
+    this.server.setRequestHandler(
+      'ts-react-agent/optimize-code',
+      async args => {
+        const schema = z.object({
+          code: z.string(),
+          optimizationType: z
+            .enum(['performance', 'readability', 'type-safety', 'patterns'])
+            .default('performance'),
+          context: z.string().optional(),
         });
-        
-        return {
-          success: true,
-          optimization,
-          timestamp: new Date().toISOString(),
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        };
+        const validated = schema.parse(args);
+
+        try {
+          const optimization = await this.optimizeTypeScriptCode(
+            validated.code,
+            validated.optimizationType,
+            validated.context
+          );
+
+          // Store optimization in memory
+          this.storeInMemory(
+            `optimization-${Date.now()}`,
+            optimization,
+            'solution',
+            {
+              optimizationType: validated.optimizationType,
+              originalCode: validated.code,
+            }
+          );
+
+          return {
+            success: true,
+            optimization,
+            timestamp: new Date().toISOString(),
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString(),
+          };
+        }
       }
-    });
+    );
 
     // Detect and suggest patterns
-    this.server.setRequestHandler('ts-react-agent/detect-patterns', async (args) => {
-      const schema = z.object({
-        path: z.string().optional(),
-        patternTypes: z.array(z.string()).optional(),
-      });
-      const validated = schema.parse(args);
-
-      try {
-        const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.path ? path.resolve(projectRoot, validated.path) : projectRoot;
-        
-        const patterns = await this.detectCodePatterns(targetPath, validated.patternTypes);
-        
-        // Store patterns in memory
-        this.storeInMemory('detected-patterns', patterns, 'pattern', {
-          path: targetPath,
-          timestamp: new Date().toISOString(),
+    this.server.setRequestHandler(
+      'ts-react-agent/detect-patterns',
+      async args => {
+        const schema = z.object({
+          path: z.string().optional(),
+          patternTypes: z.array(z.string()).optional(),
         });
-        
-        return {
-          success: true,
-          patterns,
-          count: patterns.length,
-          timestamp: new Date().toISOString(),
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        };
+        const validated = schema.parse(args);
+
+        try {
+          const projectRoot = path.resolve(__dirname, '..');
+          const targetPath = validated.path
+            ? path.resolve(projectRoot, validated.path)
+            : projectRoot;
+
+          const patterns = await this.detectCodePatterns(
+            targetPath,
+            validated.patternTypes
+          );
+
+          // Store patterns in memory
+          this.storeInMemory('detected-patterns', patterns, 'pattern', {
+            path: targetPath,
+            timestamp: new Date().toISOString(),
+          });
+
+          return {
+            success: true,
+            patterns,
+            count: patterns.length,
+            timestamp: new Date().toISOString(),
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString(),
+          };
+        }
       }
-    });
+    );
 
     // Generate project recommendations
-    this.server.setRequestHandler('ts-react-agent/generate-recommendations', async (args) => {
-      const schema = z.object({
-        path: z.string().optional(),
-        focusAreas: z.array(z.string()).optional(),
-      });
-      const validated = schema.parse(args);
-
-      try {
-        const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.path ? path.resolve(projectRoot, validated.path) : projectRoot;
-        
-        const recommendations = await this.generateProjectRecommendations(
-          targetPath,
-          validated.focusAreas
-        );
-        
-        // Store recommendations in memory
-        this.storeInMemory('project-recommendations', recommendations, 'solution', {
-          path: targetPath,
-          focusAreas: validated.focusAreas,
+    this.server.setRequestHandler(
+      'ts-react-agent/generate-recommendations',
+      async args => {
+        const schema = z.object({
+          path: z.string().optional(),
+          focusAreas: z.array(z.string()).optional(),
         });
-        
-        return {
-          success: true,
-          recommendations,
-          count: recommendations.length,
-          timestamp: new Date().toISOString(),
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        };
+        const validated = schema.parse(args);
+
+        try {
+          const projectRoot = path.resolve(__dirname, '..');
+          const targetPath = validated.path
+            ? path.resolve(projectRoot, validated.path)
+            : projectRoot;
+
+          const recommendations = await this.generateProjectRecommendations(
+            targetPath,
+            validated.focusAreas
+          );
+
+          // Store recommendations in memory
+          this.storeInMemory(
+            'project-recommendations',
+            recommendations,
+            'solution',
+            {
+              path: targetPath,
+              focusAreas: validated.focusAreas,
+            }
+          );
+
+          return {
+            success: true,
+            recommendations,
+            count: recommendations.length,
+            timestamp: new Date().toISOString(),
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString(),
+          };
+        }
       }
-    });
+    );
 
     // Memory bank management
-    this.server.setRequestHandler('ts-react-agent/manage-memory', async (args) => {
-      const schema = z.object({
-        action: z.enum(['clear', 'export', 'import', 'stats']),
-        data: z.any().optional(),
-      });
-      const validated = schema.parse(args);
+    this.server.setRequestHandler(
+      'ts-react-agent/manage-memory',
+      async args => {
+        const schema = z.object({
+          action: z.enum(['clear', 'export', 'import', 'stats']),
+          data: z.any().optional(),
+        });
+        const validated = schema.parse(args);
 
-      try {
-        let result;
-        switch (validated.action) {
-          case 'clear':
-            result = this.clearMemory();
-            break;
-          case 'export':
-            result = this.exportMemory();
-            break;
-          case 'import':
-            result = this.importMemory(validated.data);
-            break;
-          case 'stats':
-            result = this.getMemoryStats();
-            break;
+        try {
+          let result;
+          switch (validated.action) {
+            case 'clear':
+              result = this.clearMemory();
+              break;
+            case 'export':
+              result = this.exportMemory();
+              break;
+            case 'import':
+              result = this.importMemory(validated.data);
+              break;
+            case 'stats':
+              result = this.getMemoryStats();
+              break;
+          }
+
+          return {
+            success: true,
+            action: validated.action,
+            result,
+            timestamp: new Date().toISOString(),
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString(),
+          };
         }
-        
-        return {
-          success: true,
-          action: validated.action,
-          result,
-          timestamp: new Date().toISOString(),
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        };
       }
-    });
+    );
   }
 
   storeInMemory(key, value, category, metadata = {}) {
@@ -317,12 +382,12 @@ class TypeScriptReactAgentMCPServer {
     };
 
     this.memoryBank.set(key, memoryEntry);
-    
+
     // Also store by category for easier retrieval
     if (!this.memoryBank.has(`_category_${category}`)) {
       this.memoryBank.set(`_category_${category}`, []);
     }
-    
+
     const categoryEntries = this.memoryBank.get(`_category_${category}`);
     categoryEntries.push(key);
     this.memoryBank.set(`_category_${category}`, categoryEntries);
@@ -353,7 +418,7 @@ class TypeScriptReactAgentMCPServer {
       const searchLower = search.toLowerCase();
       for (const [entryKey, entry] of this.memoryBank) {
         if (entryKey.startsWith('_category_')) continue;
-        
+
         const searchableText = JSON.stringify(entry).toLowerCase();
         if (searchableText.includes(searchLower)) {
           entry.metadata.accessCount++;
@@ -413,12 +478,18 @@ class TypeScriptReactAgentMCPServer {
     // Analyze package.json
     try {
       const packageJsonPath = path.join(targetPath, 'package.json');
-      const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
-      
+      const packageJson = JSON.parse(
+        await fs.readFile(packageJsonPath, 'utf8')
+      );
+
       analysis.project.name = packageJson.name || analysis.project.name;
-      analysis.dependencies.production = Object.keys(packageJson.dependencies || {});
-      analysis.dependencies.development = Object.keys(packageJson.devDependencies || {});
-      
+      analysis.dependencies.production = Object.keys(
+        packageJson.dependencies || {}
+      );
+      analysis.dependencies.development = Object.keys(
+        packageJson.devDependencies || {}
+      );
+
       // Detect framework
       if (analysis.dependencies.production.includes('next')) {
         analysis.project.framework = 'Next.js';
@@ -429,25 +500,27 @@ class TypeScriptReactAgentMCPServer {
       } else if (analysis.dependencies.production.includes('react')) {
         analysis.project.framework = 'React';
       }
-      
+
       // Detect TypeScript usage
-      if (analysis.dependencies.production.includes('typescript') || 
-          analysis.dependencies.development.includes('typescript')) {
+      if (
+        analysis.dependencies.production.includes('typescript') ||
+        analysis.dependencies.development.includes('typescript')
+      ) {
         analysis.project.type = 'TypeScript';
       } else if (analysis.dependencies.production.includes('@types/react')) {
         analysis.project.type = 'TypeScript';
       }
-      
+
       // Analyze React dependencies
-      analysis.dependencies.react = analysis.dependencies.production.filter(dep => 
-        dep.includes('react') || dep.includes('redux') || dep.includes('mobx')
+      analysis.dependencies.react = analysis.dependencies.production.filter(
+        dep =>
+          dep.includes('react') || dep.includes('redux') || dep.includes('mobx')
       );
-      
+
       // Analyze TypeScript dependencies
-      analysis.dependencies.typescript = analysis.dependencies.production.concat(
-        analysis.dependencies.development
-      ).filter(dep => dep.includes('typescript') || dep.includes('@types/'));
-      
+      analysis.dependencies.typescript = analysis.dependencies.production
+        .concat(analysis.dependencies.development)
+        .filter(dep => dep.includes('typescript') || dep.includes('@types/'));
     } catch (error) {
       analysis.issues.push({
         type: 'configuration',
@@ -458,31 +531,31 @@ class TypeScriptReactAgentMCPServer {
 
     // Analyze file structure
     const sourceFiles = await this.getSourceFiles(targetPath);
-    
+
     for (const file of sourceFiles) {
       const relativePath = path.relative(targetPath, file);
       const fileName = path.basename(file);
       const ext = path.extname(file);
-      
+
       // Count file types
       if (ext === '.ts' || ext === '.tsx') {
         analysis.files.typescript++;
       } else if (ext === '.js' || ext === '.jsx') {
         analysis.files.javascript++;
       }
-      
+
       if (ext === '.tsx' || ext === '.jsx') {
         analysis.files.react++;
       }
-      
+
       if (fileName.includes('.test.') || fileName.includes('.spec.')) {
         analysis.files.test++;
       }
-      
+
       if (fileName.includes('config') || fileName.includes('Config')) {
         analysis.files.config++;
       }
-      
+
       // Categorize files
       const category = this.categorizeFile(relativePath, fileName);
       if (category && analysis.structure[category]) {
@@ -492,22 +565,25 @@ class TypeScriptReactAgentMCPServer {
 
     // Calculate metrics
     analysis.metrics = await this.calculateProjectMetrics(targetPath, analysis);
-    
+
     // Generate recommendations
-    analysis.recommendations = this.generateProjectRecommendations(targetPath, includeMetrics);
+    analysis.recommendations = this.generateProjectRecommendations(
+      targetPath,
+      includeMetrics
+    );
 
     return analysis;
   }
 
   async getSourceFiles(targetPath) {
     const files = [];
-    
+
     try {
       const entries = await fs.readdir(targetPath, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         const fullPath = path.join(targetPath, entry.name);
-        
+
         if (entry.isDirectory() && !this.shouldSkipDirectory(entry.name)) {
           const subFiles = await this.getSourceFiles(fullPath);
           files.push(...subFiles);
@@ -518,7 +594,7 @@ class TypeScriptReactAgentMCPServer {
     } catch (error) {
       // Directory might not exist or be readable
     }
-    
+
     return files;
   }
 
@@ -544,19 +620,26 @@ class TypeScriptReactAgentMCPServer {
   categorizeFile(relativePath, fileName) {
     const lowerPath = relativePath.toLowerCase();
     const lowerName = fileName.toLowerCase();
-    
+
     if (lowerName.includes('component') || lowerName.includes('component')) {
       return 'components';
     } else if (lowerName.includes('hook') || lowerPath.includes('hooks/')) {
       return 'hooks';
-    } else if (lowerName.includes('service') || lowerPath.includes('services/')) {
+    } else if (
+      lowerName.includes('service') ||
+      lowerPath.includes('services/')
+    ) {
       return 'services';
-    } else if (lowerName.includes('type') || lowerName.includes('interface') || lowerPath.includes('types/')) {
+    } else if (
+      lowerName.includes('type') ||
+      lowerName.includes('interface') ||
+      lowerPath.includes('types/')
+    ) {
       return 'types';
     } else if (lowerName.includes('util') || lowerPath.includes('utils/')) {
       return 'utils';
     }
-    
+
     return null;
   }
 
@@ -589,23 +672,27 @@ class TypeScriptReactAgentMCPServer {
     metrics.complexity = fileCount > 0 ? totalComplexity / fileCount : 0;
 
     // Estimate test coverage
-    const testFiles = sourceFiles.filter(file => 
-      file.includes('.test.') || file.includes('.spec.')
+    const testFiles = sourceFiles.filter(
+      file => file.includes('.test.') || file.includes('.spec.')
     );
-    metrics.coverage = sourceFiles.length > 0 ? (testFiles.length / sourceFiles.length) * 100 : 0;
+    metrics.coverage =
+      sourceFiles.length > 0
+        ? (testFiles.length / sourceFiles.length) * 100
+        : 0;
 
     // Estimate type coverage
-    const tsFiles = sourceFiles.filter(file => 
-      file.endsWith('.ts') || file.endsWith('.tsx')
+    const tsFiles = sourceFiles.filter(
+      file => file.endsWith('.ts') || file.endsWith('.tsx')
     );
-    metrics.typeCoverage = sourceFiles.length > 0 ? (tsFiles.length / sourceFiles.length) * 100 : 0;
+    metrics.typeCoverage =
+      sourceFiles.length > 0 ? (tsFiles.length / sourceFiles.length) * 100 : 0;
 
     return metrics;
   }
 
   calculateFileComplexity(content) {
     let complexity = 1;
-    
+
     const patterns = [
       /\bif\s*\(/g,
       /\belse\s+if\s*\(/g,
@@ -633,7 +720,7 @@ class TypeScriptReactAgentMCPServer {
 
     // Parse requirements
     const reqLower = requirements.toLowerCase();
-    
+
     // Generate suggestions based on requirements
     if (reqLower.includes('form')) {
       suggestions.push({
@@ -695,9 +782,9 @@ interface FormComponentProps {
   initialData?: Partial<FormData>;
 }
 
-export const FormComponent: React.FC<FormComponentProps> = ({ 
-  onSubmit, 
-  initialData = {} 
+export const FormComponent: React.FC<FormComponentProps> = ({
+  onSubmit,
+  initialData = {}
 }) => {
   const [formData, setFormData] = useState<FormData>({
     // Initialize with default values
@@ -708,7 +795,7 @@ export const FormComponent: React.FC<FormComponentProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate form data
     const validationErrors = validateForm(formData);
     if (Object.keys(validationErrors).length > 0) {
@@ -721,9 +808,9 @@ export const FormComponent: React.FC<FormComponentProps> = ({
 
   const validateForm = (data: FormData): Partial<FormData> => {
     const errors: Partial<FormData> = {};
-    
+
     // Add validation logic here
-    
+
     return errors;
   };
 
@@ -735,7 +822,7 @@ export const FormComponent: React.FC<FormComponentProps> = ({
   );
 };`;
     }
-    
+
     // Add other component types as needed
     return '// Component code generation not implemented for this type';
   }
@@ -796,7 +883,7 @@ export const ListComponent: React.FC<ListComponentProps> = ({
           onChange={(e) => setFilterText(e.target.value)}
         />
       )}
-      
+
       <ul>
         {filteredAndSortedItems.map((item) => (
           <li
@@ -895,7 +982,7 @@ export const ButtonComponent: React.FC<ButtonComponentProps> = ({
   const baseClasses = 'btn';
   const variantClasses = \`btn-\${variant}\`;
   const sizeClasses = \`btn-\${size}\`;
-  
+
   const classes = [baseClasses, variantClasses, sizeClasses].join(' ');
 
   return (
@@ -983,7 +1070,8 @@ export const GenericComponent: React.FC<GenericComponentProps> = ({
         type: 'performance',
         severity: 'medium',
         message: 'Consider using stable keys instead of array index',
-        suggestion: 'Use unique identifiers as keys for better React performance',
+        suggestion:
+          'Use unique identifiers as keys for better React performance',
       });
     }
 
@@ -991,8 +1079,10 @@ export const GenericComponent: React.FC<GenericComponentProps> = ({
       improvements.push({
         type: 'performance',
         severity: 'low',
-        message: 'Consider using useCallback for functions passed to child components',
-        suggestion: 'Wrap functions with useCallback to prevent unnecessary re-renders',
+        message:
+          'Consider using useCallback for functions passed to child components',
+        suggestion:
+          'Wrap functions with useCallback to prevent unnecessary re-renders',
       });
     }
 
@@ -1001,7 +1091,8 @@ export const GenericComponent: React.FC<GenericComponentProps> = ({
         type: 'performance',
         severity: 'medium',
         message: 'Consider using useReducer for complex state management',
-        suggestion: 'Use useReducer when state logic is complex or involves multiple sub-values',
+        suggestion:
+          'Use useReducer when state logic is complex or involves multiple sub-values',
       });
     }
 
@@ -1035,7 +1126,8 @@ export const GenericComponent: React.FC<GenericComponentProps> = ({
         type: 'readability',
         severity: 'medium',
         message: 'Define interfaces for component props',
-        suggestion: 'Create TypeScript interfaces for better prop documentation',
+        suggestion:
+          'Create TypeScript interfaces for better prop documentation',
       });
     }
 
@@ -1085,11 +1177,15 @@ export const GenericComponent: React.FC<GenericComponentProps> = ({
         type: 'patterns',
         severity: 'medium',
         message: 'Consider converting class component to functional component',
-        suggestion: 'Use React hooks instead of class components for better performance',
+        suggestion:
+          'Use React hooks instead of class components for better performance',
       });
     }
 
-    if (code.includes('componentDidMount') || code.includes('componentDidUpdate')) {
+    if (
+      code.includes('componentDidMount') ||
+      code.includes('componentDidUpdate')
+    ) {
       improvements.push({
         type: 'patterns',
         severity: 'medium',
@@ -1202,8 +1298,10 @@ export const GenericComponent: React.FC<GenericComponentProps> = ({
       priority: 'high',
       category: 'structure',
       title: 'Organize Project Structure',
-      description: 'Ensure consistent folder structure for components, hooks, and utilities',
-      implementation: 'Create standardized directories: components/, hooks/, utils/, types/',
+      description:
+        'Ensure consistent folder structure for components, hooks, and utilities',
+      implementation:
+        'Create standardized directories: components/, hooks/, utils/, types/',
     });
 
     recommendations.push({
@@ -1211,7 +1309,8 @@ export const GenericComponent: React.FC<GenericComponentProps> = ({
       category: 'typescript',
       title: 'Improve Type Safety',
       description: 'Add proper TypeScript types throughout the project',
-      implementation: 'Define interfaces for all props, state, and API responses',
+      implementation:
+        'Define interfaces for all props, state, and API responses',
     });
 
     recommendations.push({
@@ -1219,7 +1318,8 @@ export const GenericComponent: React.FC<GenericComponentProps> = ({
       category: 'performance',
       title: 'Optimize Bundle Size',
       description: 'Reduce bundle size by code splitting and lazy loading',
-      implementation: 'Use React.lazy() and dynamic imports for route-based code splitting',
+      implementation:
+        'Use React.lazy() and dynamic imports for route-based code splitting',
     });
 
     return recommendations;
@@ -1260,11 +1360,11 @@ export const GenericComponent: React.FC<GenericComponentProps> = ({
     for (const [key, entry] of this.memoryBank) {
       if (!key.startsWith('_category_')) {
         stats.totalEntries++;
-        
+
         // Count by category
         const category = entry.category;
         stats.byCategory[category] = (stats.byCategory[category] || 0) + 1;
-        
+
         // Track most accessed
         if (entry.metadata.accessCount > 0) {
           stats.mostAccessed.push({

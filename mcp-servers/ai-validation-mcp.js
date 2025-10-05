@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { McpServer } from '@modelcontextprotocol/sdk/dist/esm/server/mcp.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/dist/esm/server/stdio.js';
 import { z } from 'zod';
 import fs from 'fs/promises';
 import path from 'path';
@@ -12,24 +12,17 @@ const __dirname = path.dirname(__filename);
 
 class AIValidationMCPServer {
   constructor() {
-    this.server = new Server(
-      {
-        name: 'ai-validation',
-        version: '1.0.0',
-      },
-      {
-        capabilities: {
-          tools: {},
-        },
-      }
-    );
+    this.server = new McpServer({
+      name: 'ai-validation',
+      version: '1.0.0',
+    });
 
     this.setupToolHandlers();
   }
 
   setupToolHandlers() {
     // AI JSON Test Runner
-    this.server.setRequestHandler('ai-validation/run-json-test', async (args) => {
+    this.server.setRequestHandler('ai-validation/run-json-test', async args => {
       const schema = z.object({
         testSuite: z.string(),
         prompt: z.string(),
@@ -41,14 +34,17 @@ class AIValidationMCPServer {
       try {
         // Parse and validate JSON test suite
         const testData = JSON.parse(validated.testSuite);
-        
+
         // Run AI prompt engineering validation
-        const validationResults = await this.runPromptValidation(validated.prompt, testData);
-        
+        const validationResults = await this.runPromptValidation(
+          validated.prompt,
+          testData
+        );
+
         // Apply custom validation rules
         if (validated.validationRules) {
           validationResults.customRules = await this.applyValidationRules(
-            testData, 
+            testData,
             validated.validationRules
           );
         }
@@ -56,7 +52,7 @@ class AIValidationMCPServer {
         // Check against expected output if provided
         if (validated.expectedOutput) {
           validationResults.expectedMatch = this.compareOutputs(
-            testData, 
+            testData,
             validated.expectedOutput
           );
         }
@@ -76,103 +72,112 @@ class AIValidationMCPServer {
     });
 
     // Prompt Engineering Assistant
-    this.server.setRequestHandler('ai-validation/optimize-prompt', async (args) => {
-      const schema = z.object({
-        originalPrompt: z.string(),
-        context: z.string().optional(),
-        targetModel: z.string().optional(),
-        optimizationGoals: z.array(z.string()).optional(),
-      });
-      const validated = schema.parse(args);
+    this.server.setRequestHandler(
+      'ai-validation/optimize-prompt',
+      async args => {
+        const schema = z.object({
+          originalPrompt: z.string(),
+          context: z.string().optional(),
+          targetModel: z.string().optional(),
+          optimizationGoals: z.array(z.string()).optional(),
+        });
+        const validated = schema.parse(args);
 
-      try {
-        const optimizedPrompt = await this.optimizePrompt(
-          validated.originalPrompt,
-          validated.context,
-          validated.targetModel,
-          validated.optimizationGoals
-        );
+        try {
+          const optimizedPrompt = await this.optimizePrompt(
+            validated.originalPrompt,
+            validated.context,
+            validated.targetModel,
+            validated.optimizationGoals
+          );
 
-        return {
-          success: true,
-          originalPrompt: validated.originalPrompt,
-          optimizedPrompt,
-          improvements: this.analyzePromptImprovements(
-            validated.originalPrompt, 
-            optimizedPrompt
-          ),
-          timestamp: new Date().toISOString(),
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        };
+          return {
+            success: true,
+            originalPrompt: validated.originalPrompt,
+            optimizedPrompt,
+            improvements: this.analyzePromptImprovements(
+              validated.originalPrompt,
+              optimizedPrompt
+            ),
+            timestamp: new Date().toISOString(),
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString(),
+          };
+        }
       }
-    });
+    );
 
     // AI Output Validator
-    this.server.setRequestHandler('ai-validation/validate-output', async (args) => {
-      const schema = z.object({
-        aiOutput: z.string(),
-        validationCriteria: z.array(z.string()),
-        schema: z.string().optional(),
-      });
-      const validated = schema.parse(args);
+    this.server.setRequestHandler(
+      'ai-validation/validate-output',
+      async args => {
+        const schema = z.object({
+          aiOutput: z.string(),
+          validationCriteria: z.array(z.string()),
+          schema: z.string().optional(),
+        });
+        const validated = schema.parse(args);
 
-      try {
-        const validationResults = await this.validateAIOutput(
-          validated.aiOutput,
-          validated.validationCriteria,
-          validated.schema
-        );
+        try {
+          const validationResults = await this.validateAIOutput(
+            validated.aiOutput,
+            validated.validationCriteria,
+            validated.schema
+          );
 
-        return {
-          success: true,
-          results: validationResults,
-          score: this.calculateValidationScore(validationResults),
-          timestamp: new Date().toISOString(),
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        };
+          return {
+            success: true,
+            results: validationResults,
+            score: this.calculateValidationScore(validationResults),
+            timestamp: new Date().toISOString(),
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString(),
+          };
+        }
       }
-    });
+    );
 
     // Test Suite Generator
-    this.server.setRequestHandler('ai-validation/generate-test-suite', async (args) => {
-      const schema = z.object({
-        component: z.string(),
-        testType: z.enum(['unit', 'integration', 'e2e', 'performance']),
-        requirements: z.array(z.string()).optional(),
-      });
-      const validated = schema.parse(args);
+    this.server.setRequestHandler(
+      'ai-validation/generate-test-suite',
+      async args => {
+        const schema = z.object({
+          component: z.string(),
+          testType: z.enum(['unit', 'integration', 'e2e', 'performance']),
+          requirements: z.array(z.string()).optional(),
+        });
+        const validated = schema.parse(args);
 
-      try {
-        const testSuite = await this.generateTestSuite(
-          validated.component,
-          validated.testType,
-          validated.requirements
-        );
+        try {
+          const testSuite = await this.generateTestSuite(
+            validated.component,
+            validated.testType,
+            validated.requirements
+          );
 
-        return {
-          success: true,
-          testSuite,
-          testCount: testSuite.tests?.length || 0,
-          timestamp: new Date().toISOString(),
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        };
+          return {
+            success: true,
+            testSuite,
+            testCount: testSuite.tests?.length || 0,
+            timestamp: new Date().toISOString(),
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString(),
+          };
+        }
       }
-    });
+    );
   }
 
   async runPromptValidation(prompt, testData) {
@@ -226,7 +231,11 @@ class AIValidationMCPServer {
     }
 
     // Check for ambiguity
-    if (prompt.includes('maybe') || prompt.includes('might') || prompt.includes('could')) {
+    if (
+      prompt.includes('maybe') ||
+      prompt.includes('might') ||
+      prompt.includes('could')
+    ) {
       clarityScore.issues.push('Contains ambiguous language');
     }
 
@@ -258,12 +267,20 @@ class AIValidationMCPServer {
     }
 
     // Check for measurable outcomes
-    if (prompt.match(/\d+/) || prompt.includes('number') || prompt.includes('count')) {
+    if (
+      prompt.match(/\d+/) ||
+      prompt.includes('number') ||
+      prompt.includes('count')
+    ) {
       specificityScore.score += 15;
     }
 
     // Check for output format
-    if (prompt.includes('JSON') || prompt.includes('XML') || prompt.includes('format')) {
+    if (
+      prompt.includes('JSON') ||
+      prompt.includes('XML') ||
+      prompt.includes('format')
+    ) {
       specificityScore.score += 15;
     }
 
@@ -291,17 +308,29 @@ class AIValidationMCPServer {
     }
 
     // Check for problem statement
-    if (prompt.includes('problem') || prompt.includes('issue') || prompt.includes('challenge')) {
+    if (
+      prompt.includes('problem') ||
+      prompt.includes('issue') ||
+      prompt.includes('challenge')
+    ) {
       contextScore.score += 20;
     }
 
     // Check for goal definition
-    if (prompt.includes('goal') || prompt.includes('objective') || prompt.includes('purpose')) {
+    if (
+      prompt.includes('goal') ||
+      prompt.includes('objective') ||
+      prompt.includes('purpose')
+    ) {
       contextScore.score += 20;
     }
 
     // Check for constraints
-    if (prompt.includes('constraint') || prompt.includes('limitation') || prompt.includes('restriction')) {
+    if (
+      prompt.includes('constraint') ||
+      prompt.includes('limitation') ||
+      prompt.includes('restriction')
+    ) {
       contextScore.score += 15;
     }
 
@@ -311,7 +340,11 @@ class AIValidationMCPServer {
     }
 
     // Check for scope
-    if (prompt.includes('scope') || prompt.includes('range') || prompt.includes('boundary')) {
+    if (
+      prompt.includes('scope') ||
+      prompt.includes('range') ||
+      prompt.includes('boundary')
+    ) {
       contextScore.score += 10;
     }
 
@@ -326,7 +359,11 @@ class AIValidationMCPServer {
     };
 
     // Check for example indicators
-    if (prompt.includes('example') || prompt.includes('sample') || prompt.includes('instance')) {
+    if (
+      prompt.includes('example') ||
+      prompt.includes('sample') ||
+      prompt.includes('instance')
+    ) {
       examplesScore.score += 30;
     }
 
@@ -378,7 +415,8 @@ class AIValidationMCPServer {
     testResults.successRate = (successfulTests / totalTests) * 100;
     testResults.errorRate = 100 - testResults.successRate;
     testResults.averageResponseTime = Math.random() * 2000 + 500; // 500-2500ms
-    testResults.qualityScore = testResults.successRate * 0.8 + Math.random() * 20;
+    testResults.qualityScore =
+      testResults.successRate * 0.8 + Math.random() * 20;
 
     return testResults;
   }
@@ -390,7 +428,8 @@ class AIValidationMCPServer {
       recommendations.push({
         type: 'clarity',
         priority: 'high',
-        suggestion: 'Improve prompt clarity by adding specific instructions and removing ambiguous language',
+        suggestion:
+          'Improve prompt clarity by adding specific instructions and removing ambiguous language',
       });
     }
 
@@ -406,7 +445,8 @@ class AIValidationMCPServer {
       recommendations.push({
         type: 'context',
         priority: 'medium',
-        suggestion: 'Provide more background information and context for better understanding',
+        suggestion:
+          'Provide more background information and context for better understanding',
       });
     }
 
@@ -421,7 +461,12 @@ class AIValidationMCPServer {
     return recommendations;
   }
 
-  async optimizePrompt(originalPrompt, context, targetModel, optimizationGoals) {
+  async optimizePrompt(
+    originalPrompt,
+    context,
+    targetModel,
+    optimizationGoals
+  ) {
     let optimizedPrompt = originalPrompt;
 
     // Apply optimization strategies based on goals
@@ -447,7 +492,10 @@ class AIValidationMCPServer {
 
     // Model-specific optimizations
     if (targetModel) {
-      optimizedPrompt = this.applyModelOptimizations(optimizedPrompt, targetModel);
+      optimizedPrompt = this.applyModelOptimizations(
+        optimizedPrompt,
+        targetModel
+      );
     }
 
     return optimizedPrompt;
@@ -461,7 +509,8 @@ class AIValidationMCPServer {
 
     // Add formatting instructions
     if (!prompt.includes('format') && !prompt.includes('structure')) {
-      prompt += '\n\nPlease provide your response in a clear, structured format.';
+      prompt +=
+        '\n\nPlease provide your response in a clear, structured format.';
     }
 
     return prompt;
@@ -470,7 +519,8 @@ class AIValidationMCPServer {
   improveSpecificity(prompt) {
     // Add specific requirements
     if (!prompt.includes('must') && !prompt.includes('required')) {
-      prompt += '\n\nRequirements:\n- Be specific and detailed\n- Include relevant examples\n- Provide measurable outcomes';
+      prompt +=
+        '\n\nRequirements:\n- Be specific and detailed\n- Include relevant examples\n- Provide measurable outcomes';
     }
 
     return prompt;
@@ -502,8 +552,8 @@ class AIValidationMCPServer {
     // Model-specific optimizations
     const modelOptimizations = {
       'gpt-4': 'Use clear, structured prompts with specific examples.',
-      'claude': 'Focus on detailed reasoning and step-by-step analysis.',
-      'mistral': 'Keep prompts concise and action-oriented.',
+      claude: 'Focus on detailed reasoning and step-by-step analysis.',
+      mistral: 'Keep prompts concise and action-oriented.',
     };
 
     const optimization = modelOptimizations[model.toLowerCase()];
@@ -517,9 +567,21 @@ class AIValidationMCPServer {
   analyzePromptImprovements(original, optimized) {
     return {
       lengthChange: optimized.length - original.length,
-      clarityImprovement: this.measureImprovement(original, optimized, 'clarity'),
-      specificityImprovement: this.measureImprovement(original, optimized, 'specificity'),
-      structureImprovement: this.measureImprovement(original, optimized, 'structure'),
+      clarityImprovement: this.measureImprovement(
+        original,
+        optimized,
+        'clarity'
+      ),
+      specificityImprovement: this.measureImprovement(
+        original,
+        optimized,
+        'specificity'
+      ),
+      structureImprovement: this.measureImprovement(
+        original,
+        optimized,
+        'structure'
+      ),
     };
   }
 
@@ -553,7 +615,7 @@ class AIValidationMCPServer {
     for (const criterion of criteria) {
       const result = await this.validateCriterion(output, criterion, schema);
       results.details.push(result);
-      
+
       if (result.passed) {
         results.passed++;
       } else {
@@ -606,13 +668,19 @@ class AIValidationMCPServer {
         testSuite.tests = this.generateUnitTests(component, requirements);
         break;
       case 'integration':
-        testSuite.tests = this.generateIntegrationTests(component, requirements);
+        testSuite.tests = this.generateIntegrationTests(
+          component,
+          requirements
+        );
         break;
       case 'e2e':
         testSuite.tests = this.generateE2ETests(component, requirements);
         break;
       case 'performance':
-        testSuite.tests = this.generatePerformanceTests(component, requirements);
+        testSuite.tests = this.generatePerformanceTests(
+          component,
+          requirements
+        );
         break;
     }
 
@@ -644,7 +712,8 @@ class AIValidationMCPServer {
       {
         name: `${component} should integrate with parent components`,
         type: 'integration',
-        description: 'Verify component works correctly within parent components',
+        description:
+          'Verify component works correctly within parent components',
       },
       {
         name: `${component} should handle state changes`,
@@ -686,7 +755,7 @@ class AIValidationMCPServer {
 
   async applyValidationRules(testData, rules) {
     const results = [];
-    
+
     for (const rule of rules) {
       const result = await this.applyRule(testData, rule);
       results.push(result);
@@ -708,9 +777,11 @@ class AIValidationMCPServer {
   compareOutputs(actual, expected) {
     // Simple comparison logic
     try {
-      const actualParsed = typeof actual === 'string' ? JSON.parse(actual) : actual;
-      const expectedParsed = typeof expected === 'string' ? JSON.parse(expected) : expected;
-      
+      const actualParsed =
+        typeof actual === 'string' ? JSON.parse(actual) : actual;
+      const expectedParsed =
+        typeof expected === 'string' ? JSON.parse(expected) : expected;
+
       return {
         match: JSON.stringify(actualParsed) === JSON.stringify(expectedParsed),
         similarity: this.calculateSimilarity(actualParsed, expectedParsed),
@@ -728,19 +799,19 @@ class AIValidationMCPServer {
     // Simple similarity calculation
     const actualStr = JSON.stringify(actual);
     const expectedStr = JSON.stringify(expected);
-    
+
     if (actualStr === expectedStr) return 100;
-    
+
     // Calculate character-level similarity
     let matches = 0;
     const maxLength = Math.max(actualStr.length, expectedStr.length);
-    
+
     for (let i = 0; i < maxLength; i++) {
       if (actualStr[i] === expectedStr[i]) {
         matches++;
       }
     }
-    
+
     return (matches / maxLength) * 100;
   }
 

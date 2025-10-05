@@ -29,33 +29,40 @@ class SessionAnalyzerMCPServer {
 
   setupToolHandlers() {
     // Analyze JWT tokens
-    this.server.setRequestHandler('session-analyzer/analyze-jwt', async (args) => {
-      const schema = z.object({
-        token: z.string(),
-        secret: z.string().optional(),
-        verifySignature: z.boolean().default(false),
-      });
-      const validated = schema.parse(args);
+    this.server.setRequestHandler(
+      'session-analyzer/analyze-jwt',
+      async args => {
+        const schema = z.object({
+          token: z.string(),
+          secret: z.string().optional(),
+          verifySignature: z.boolean().default(false),
+        });
+        const validated = schema.parse(args);
 
-      try {
-        const analysis = await this.analyzeJWT(validated.token, validated.secret, validated.verifySignature);
-        
-        return {
-          success: true,
-          analysis,
-          timestamp: new Date().toISOString(),
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        };
+        try {
+          const analysis = await this.analyzeJWT(
+            validated.token,
+            validated.secret,
+            validated.verifySignature
+          );
+
+          return {
+            success: true,
+            analysis,
+            timestamp: new Date().toISOString(),
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString(),
+          };
+        }
       }
-    });
+    );
 
     // Check CSRF protection
-    this.server.setRequestHandler('session-analyzer/check-csrf', async (args) => {
+    this.server.setRequestHandler('session-analyzer/check-csrf', async args => {
       const schema = z.object({
         codebase: z.string().optional(),
         endpoints: z.array(z.string()).optional(),
@@ -64,10 +71,15 @@ class SessionAnalyzerMCPServer {
 
       try {
         const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.codebase ? path.resolve(projectRoot, validated.codebase) : projectRoot;
-        
-        const analysis = await this.analyzeCSRFProtection(targetPath, validated.endpoints);
-        
+        const targetPath = validated.codebase
+          ? path.resolve(projectRoot, validated.codebase)
+          : projectRoot;
+
+        const analysis = await this.analyzeCSRFProtection(
+          targetPath,
+          validated.endpoints
+        );
+
         return {
           success: true,
           analysis,
@@ -83,119 +95,151 @@ class SessionAnalyzerMCPServer {
     });
 
     // Analyze cookie security
-    this.server.setRequestHandler('session-analyzer/analyze-cookies', async (args) => {
-      const schema = z.object({
-        codebase: z.string().optional(),
-        cookies: z.array(z.string()).optional(),
-      });
-      const validated = schema.parse(args);
+    this.server.setRequestHandler(
+      'session-analyzer/analyze-cookies',
+      async args => {
+        const schema = z.object({
+          codebase: z.string().optional(),
+          cookies: z.array(z.string()).optional(),
+        });
+        const validated = schema.parse(args);
 
-      try {
-        const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.codebase ? path.resolve(projectRoot, validated.codebase) : projectRoot;
-        
-        const analysis = await this.analyzeCookieSecurity(targetPath, validated.cookies);
-        
-        return {
-          success: true,
-          analysis,
-          timestamp: new Date().toISOString(),
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        };
+        try {
+          const projectRoot = path.resolve(__dirname, '..');
+          const targetPath = validated.codebase
+            ? path.resolve(projectRoot, validated.codebase)
+            : projectRoot;
+
+          const analysis = await this.analyzeCookieSecurity(
+            targetPath,
+            validated.cookies
+          );
+
+          return {
+            success: true,
+            analysis,
+            timestamp: new Date().toISOString(),
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString(),
+          };
+        }
       }
-    });
+    );
 
     // Simulate session attack
-    this.server.setRequestHandler('session-analyzer/simulate-attack', async (args) => {
-      const schema = z.object({
-        attackType: z.enum(['csrf', 'session-fixation', 'session-hijacking', 'xss']),
-        targetUrl: z.string(),
-        payload: z.string().optional(),
-      });
-      const validated = schema.parse(args);
+    this.server.setRequestHandler(
+      'session-analyzer/simulate-attack',
+      async args => {
+        const schema = z.object({
+          attackType: z.enum([
+            'csrf',
+            'session-fixation',
+            'session-hijacking',
+            'xss',
+          ]),
+          targetUrl: z.string(),
+          payload: z.string().optional(),
+        });
+        const validated = schema.parse(args);
 
-      try {
-        const result = await this.simulateAttack(
-          validated.attackType, 
-          validated.targetUrl, 
-          validated.payload
-        );
-        
-        return {
-          success: true,
-          attackType: validated.attackType,
-          result,
-          timestamp: new Date().toISOString(),
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        };
+        try {
+          const result = await this.simulateAttack(
+            validated.attackType,
+            validated.targetUrl,
+            validated.payload
+          );
+
+          return {
+            success: true,
+            attackType: validated.attackType,
+            result,
+            timestamp: new Date().toISOString(),
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString(),
+          };
+        }
       }
-    });
+    );
 
     // Check session configuration
-    this.server.setRequestHandler('session-analyzer/check-session-config', async (args) => {
-      const schema = z.object({
-        codebase: z.string().optional(),
-        configFile: z.string().optional(),
-      });
-      const validated = schema.parse(args);
+    this.server.setRequestHandler(
+      'session-analyzer/check-session-config',
+      async args => {
+        const schema = z.object({
+          codebase: z.string().optional(),
+          configFile: z.string().optional(),
+        });
+        const validated = schema.parse(args);
 
-      try {
-        const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.codebase ? path.resolve(projectRoot, validated.codebase) : projectRoot;
-        
-        const analysis = await this.analyzeSessionConfiguration(targetPath, validated.configFile);
-        
-        return {
-          success: true,
-          analysis,
-          timestamp: new Date().toISOString(),
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        };
+        try {
+          const projectRoot = path.resolve(__dirname, '..');
+          const targetPath = validated.codebase
+            ? path.resolve(projectRoot, validated.codebase)
+            : projectRoot;
+
+          const analysis = await this.analyzeSessionConfiguration(
+            targetPath,
+            validated.configFile
+          );
+
+          return {
+            success: true,
+            analysis,
+            timestamp: new Date().toISOString(),
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString(),
+          };
+        }
       }
-    });
+    );
 
     // Generate security report
-    this.server.setRequestHandler('session-analyzer/generate-report', async (args) => {
-      const schema = z.object({
-        codebase: z.string().optional(),
-        includeRecommendations: z.boolean().default(true),
-      });
-      const validated = schema.parse(args);
+    this.server.setRequestHandler(
+      'session-analyzer/generate-report',
+      async args => {
+        const schema = z.object({
+          codebase: z.string().optional(),
+          includeRecommendations: z.boolean().default(true),
+        });
+        const validated = schema.parse(args);
 
-      try {
-        const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.codebase ? path.resolve(projectRoot, validated.codebase) : projectRoot;
-        
-        const report = await this.generateSecurityReport(targetPath, validated.includeRecommendations);
-        
-        return {
-          success: true,
-          report,
-          timestamp: new Date().toISOString(),
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        };
+        try {
+          const projectRoot = path.resolve(__dirname, '..');
+          const targetPath = validated.codebase
+            ? path.resolve(projectRoot, validated.codebase)
+            : projectRoot;
+
+          const report = await this.generateSecurityReport(
+            targetPath,
+            validated.includeRecommendations
+          );
+
+          return {
+            success: true,
+            report,
+            timestamp: new Date().toISOString(),
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString(),
+          };
+        }
       }
-    });
+    );
   }
 
   async analyzeJWT(token, secret, verifySignature) {
@@ -272,10 +316,11 @@ class SessionAnalyzerMCPServer {
       }
 
       // Generate recommendations
-      analysis.recommendations = this.generateJWTRecommendations(analysis.vulnerabilities);
+      analysis.recommendations = this.generateJWTRecommendations(
+        analysis.vulnerabilities
+      );
 
       analysis.valid = analysis.vulnerabilities.length === 0;
-
     } catch (error) {
       analysis.vulnerabilities.push({
         type: 'format',
@@ -328,14 +373,15 @@ class SessionAnalyzerMCPServer {
     const recommendations = [];
 
     const vulnerabilityTypes = vulnerabilities.map(v => v.type);
-    
+
     if (vulnerabilityTypes.includes('algorithm')) {
       recommendations.push({
         priority: 'high',
         category: 'algorithm',
         title: 'Use Strong Algorithm',
         description: 'Use RS256 or ES256 instead of HMAC algorithms',
-        implementation: 'Update JWT library configuration to use RS256 or ES256',
+        implementation:
+          'Update JWT library configuration to use RS256 or ES256',
       });
     }
 
@@ -345,7 +391,8 @@ class SessionAnalyzerMCPServer {
         category: 'expiration',
         title: 'Set Proper Expiration',
         description: 'Set reasonable expiration times for JWT tokens',
-        implementation: 'Add exp claim with appropriate time-to-live (e.g., 15-30 minutes)',
+        implementation:
+          'Add exp claim with appropriate time-to-live (e.g., 15-30 minutes)',
       });
     }
 
@@ -355,7 +402,8 @@ class SessionAnalyzerMCPServer {
         category: 'data',
         title: 'Remove Sensitive Data',
         description: 'Remove sensitive data from JWT payload',
-        implementation: 'Store sensitive data server-side and use JWT for identification only',
+        implementation:
+          'Store sensitive data server-side and use JWT for identification only',
       });
     }
 
@@ -381,7 +429,7 @@ class SessionAnalyzerMCPServer {
     };
 
     const sourceFiles = await this.getSourceFiles(targetPath);
-    
+
     // Check for CSRF protection middleware
     let csrfMiddlewareFound = false;
     let csrfTokenFound = false;
@@ -390,7 +438,7 @@ class SessionAnalyzerMCPServer {
     for (const file of sourceFiles) {
       try {
         const content = await fs.readFile(file, 'utf8');
-        
+
         // Check for CSRF middleware
         if (content.includes('csrf') || content.includes('csrfProtection')) {
           csrfMiddlewareFound = true;
@@ -429,7 +477,6 @@ class SessionAnalyzerMCPServer {
             description: 'Origin header validation detected',
           });
         }
-
       } catch (error) {
         // Skip files that can't be read
       }
@@ -461,7 +508,9 @@ class SessionAnalyzerMCPServer {
     }
 
     analysis.protected = analysis.vulnerabilities.length === 0;
-    analysis.recommendations = this.generateCSRFRecommendations(analysis.vulnerabilities);
+    analysis.recommendations = this.generateCSRFRecommendations(
+      analysis.vulnerabilities
+    );
 
     return analysis;
   }
@@ -476,8 +525,10 @@ class SessionAnalyzerMCPServer {
         priority: 'critical',
         category: 'middleware',
         title: 'Implement CSRF Middleware',
-        description: 'Add CSRF protection middleware to all state-changing requests',
-        implementation: 'Use csurf middleware or implement custom CSRF protection',
+        description:
+          'Add CSRF protection middleware to all state-changing requests',
+        implementation:
+          'Use csurf middleware or implement custom CSRF protection',
       });
     }
 
@@ -487,7 +538,8 @@ class SessionAnalyzerMCPServer {
         category: 'token',
         title: 'Implement CSRF Tokens',
         description: 'Generate and validate CSRF tokens for all forms',
-        implementation: 'Include CSRF token in all forms and validate on submission',
+        implementation:
+          'Include CSRF token in all forms and validate on submission',
       });
     }
 
@@ -497,7 +549,8 @@ class SessionAnalyzerMCPServer {
         category: 'cookie',
         title: 'Configure SameSite Cookies',
         description: 'Set SameSite attribute on session cookies',
-        implementation: 'Set SameSite=Strict or SameSite=Lax on session cookies',
+        implementation:
+          'Set SameSite=Strict or SameSite=Lax on session cookies',
       });
     }
 
@@ -513,13 +566,15 @@ class SessionAnalyzerMCPServer {
     };
 
     const sourceFiles = await this.getSourceFiles(targetPath);
-    
+
     for (const file of sourceFiles) {
       try {
         const content = await fs.readFile(file, 'utf8');
-        
+
         // Find cookie configurations
-        const cookieMatches = content.match(/cookie\s*\([^)]+\)|setCookie\s*\([^)]+\)/gi);
+        const cookieMatches = content.match(
+          /cookie\s*\([^)]+\)|setCookie\s*\([^)]+\)/gi
+        );
         if (cookieMatches) {
           for (const match of cookieMatches) {
             const cookieAnalysis = this.analyzeCookieConfiguration(match);
@@ -547,16 +602,19 @@ class SessionAnalyzerMCPServer {
             description: 'Secure flag detected',
           });
         }
-
       } catch (error) {
         // Skip files that can't be read
       }
     }
 
     // Analyze cookie vulnerabilities
-    analysis.vulnerabilities = this.identifyCookieVulnerabilities(analysis.cookies);
+    analysis.vulnerabilities = this.identifyCookieVulnerabilities(
+      analysis.cookies
+    );
     analysis.secure = analysis.vulnerabilities.length === 0;
-    analysis.recommendations = this.generateCookieRecommendations(analysis.vulnerabilities);
+    analysis.recommendations = this.generateCookieRecommendations(
+      analysis.vulnerabilities
+    );
 
     return analysis;
   }
@@ -618,10 +676,12 @@ class SessionAnalyzerMCPServer {
 
     for (const cookie of cookies) {
       if (cookie.analysis && cookie.analysis.vulnerabilities) {
-        vulnerabilities.push(...cookie.analysis.vulnerabilities.map(v => ({
-          ...v,
-          file: cookie.file,
-        })));
+        vulnerabilities.push(
+          ...cookie.analysis.vulnerabilities.map(v => ({
+            ...v,
+            file: cookie.file,
+          }))
+        );
       }
     }
 
@@ -648,7 +708,8 @@ class SessionAnalyzerMCPServer {
         priority: 'high',
         category: 'secure',
         title: 'Enable Secure Flag',
-        description: 'Set Secure flag on all cookies for HTTPS-only transmission',
+        description:
+          'Set Secure flag on all cookies for HTTPS-only transmission',
         implementation: 'Add secure: true to cookie configuration',
       });
     }
@@ -686,12 +747,18 @@ class SessionAnalyzerMCPServer {
         result.vulnerabilities = await this.simulateSessionHijacking(targetUrl);
         break;
       case 'xss':
-        result.vulnerabilities = await this.simulateXSSAttack(targetUrl, payload);
+        result.vulnerabilities = await this.simulateXSSAttack(
+          targetUrl,
+          payload
+        );
         break;
     }
 
     result.success = result.vulnerabilities.length > 0;
-    result.recommendations = this.generateAttackRecommendations(attackType, result.vulnerabilities);
+    result.recommendations = this.generateAttackRecommendations(
+      attackType,
+      result.vulnerabilities
+    );
 
     return result;
   }
@@ -733,7 +800,8 @@ class SessionAnalyzerMCPServer {
       severity: 'high',
       description: 'Potential session hijacking vulnerability',
       details: 'Session cookies may not be properly secured',
-      mitigation: 'Use secure, HttpOnly cookies and implement proper session management',
+      mitigation:
+        'Use secure, HttpOnly cookies and implement proper session management',
     });
 
     return vulnerabilities;
@@ -762,7 +830,8 @@ class SessionAnalyzerMCPServer {
           priority: 'high',
           title: 'Implement CSRF Protection',
           description: 'Add CSRF tokens and validate Origin headers',
-          implementation: 'Use csurf middleware or implement custom CSRF protection',
+          implementation:
+            'Use csurf middleware or implement custom CSRF protection',
         });
         break;
       case 'session-fixation':
@@ -778,7 +847,8 @@ class SessionAnalyzerMCPServer {
           priority: 'high',
           title: 'Secure Session Cookies',
           description: 'Use secure, HttpOnly session cookies',
-          implementation: 'Configure session cookies with secure and httpOnly flags',
+          implementation:
+            'Configure session cookies with secure and httpOnly flags',
         });
         break;
       case 'xss':
@@ -821,7 +891,7 @@ class SessionAnalyzerMCPServer {
       try {
         const configPath = path.join(targetPath, configFileName);
         const content = await fs.readFile(configPath, 'utf8');
-        
+
         if (configFileName === '.env') {
           const envConfig = this.parseEnvFile(content);
           analysis.configuration = { ...analysis.configuration, ...envConfig };
@@ -838,9 +908,13 @@ class SessionAnalyzerMCPServer {
     }
 
     // Analyze configuration for security issues
-    analysis.vulnerabilities = this.analyzeConfigSecurity(analysis.configuration);
+    analysis.vulnerabilities = this.analyzeConfigSecurity(
+      analysis.configuration
+    );
     analysis.secure = analysis.vulnerabilities.length === 0;
-    analysis.recommendations = this.generateConfigRecommendations(analysis.vulnerabilities);
+    analysis.recommendations = this.generateConfigRecommendations(
+      analysis.vulnerabilities
+    );
 
     return analysis;
   }
@@ -848,7 +922,7 @@ class SessionAnalyzerMCPServer {
   parseEnvFile(content) {
     const config = {};
     const lines = content.split('\n');
-    
+
     for (const line of lines) {
       const trimmedLine = line.trim();
       if (trimmedLine && !trimmedLine.startsWith('#')) {
@@ -858,7 +932,7 @@ class SessionAnalyzerMCPServer {
         }
       }
     }
-    
+
     return config;
   }
 
@@ -869,7 +943,11 @@ class SessionAnalyzerMCPServer {
     const secretKeys = ['secret', 'key', 'password', 'token', 'auth'];
     for (const [key, value] of Object.entries(config)) {
       if (secretKeys.some(secretKey => key.toLowerCase().includes(secretKey))) {
-        if (typeof value === 'string' && !value.includes('${') && !value.includes('process.env')) {
+        if (
+          typeof value === 'string' &&
+          !value.includes('${') &&
+          !value.includes('process.env')
+        ) {
           vulnerabilities.push({
             type: 'hardcoded-secret',
             severity: 'critical',
@@ -889,7 +967,7 @@ class SessionAnalyzerMCPServer {
           description: 'Session not configured with secure flag',
         });
       }
-      
+
       if (!config.session.httpOnly) {
         vulnerabilities.push({
           type: 'insecure-session',
@@ -913,7 +991,8 @@ class SessionAnalyzerMCPServer {
         category: 'secrets',
         title: 'Use Environment Variables',
         description: 'Move hardcoded secrets to environment variables',
-        implementation: 'Use process.env.VARIABLE_NAME instead of hardcoded values',
+        implementation:
+          'Use process.env.VARIABLE_NAME instead of hardcoded values',
       });
     }
 
@@ -923,7 +1002,8 @@ class SessionAnalyzerMCPServer {
         category: 'session',
         title: 'Secure Session Configuration',
         description: 'Configure session with secure and HttpOnly flags',
-        implementation: 'Set secure: true and httpOnly: true in session configuration',
+        implementation:
+          'Set secure: true and httpOnly: true in session configuration',
       });
     }
 
@@ -997,13 +1077,13 @@ class SessionAnalyzerMCPServer {
 
   async getSourceFiles(targetPath) {
     const files = [];
-    
+
     try {
       const entries = await fs.readdir(targetPath, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         const fullPath = path.join(targetPath, entry.name);
-        
+
         if (entry.isDirectory() && !this.shouldSkipDirectory(entry.name)) {
           const subFiles = await this.getSourceFiles(fullPath);
           files.push(...subFiles);
@@ -1014,7 +1094,7 @@ class SessionAnalyzerMCPServer {
     } catch (error) {
       // Directory might not exist or be readable
     }
-    
+
     return files;
   }
 
@@ -1033,7 +1113,16 @@ class SessionAnalyzerMCPServer {
   }
 
   isSourceFile(fileName) {
-    const sourceExtensions = ['.js', '.ts', '.jsx', '.tsx', '.vue', '.svelte', '.json', '.env'];
+    const sourceExtensions = [
+      '.js',
+      '.ts',
+      '.jsx',
+      '.tsx',
+      '.vue',
+      '.svelte',
+      '.json',
+      '.env',
+    ];
     return sourceExtensions.some(ext => fileName.endsWith(ext));
   }
 

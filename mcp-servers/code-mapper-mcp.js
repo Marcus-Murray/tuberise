@@ -32,7 +32,7 @@ class CodeMapperMCPServer {
 
   setupToolHandlers() {
     // Generate dependency map
-    this.server.setRequestHandler('code-mapper/generate-map', async (args) => {
+    this.server.setRequestHandler('code-mapper/generate-map', async args => {
       const schema = z.object({
         path: z.string().optional(),
         includeTypes: z.array(z.string()).optional(),
@@ -42,10 +42,15 @@ class CodeMapperMCPServer {
 
       try {
         const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.path ? path.resolve(projectRoot, validated.path) : projectRoot;
-        
-        const dependencyMap = await this.generateDependencyMap(targetPath, validated.includeTypes);
-        
+        const targetPath = validated.path
+          ? path.resolve(projectRoot, validated.path)
+          : projectRoot;
+
+        const dependencyMap = await this.generateDependencyMap(
+          targetPath,
+          validated.includeTypes
+        );
+
         return {
           success: true,
           map: dependencyMap,
@@ -62,7 +67,7 @@ class CodeMapperMCPServer {
     });
 
     // Find circular dependencies
-    this.server.setRequestHandler('code-mapper/find-circular', async (args) => {
+    this.server.setRequestHandler('code-mapper/find-circular', async args => {
       const schema = z.object({
         path: z.string().optional(),
         maxDepth: z.number().default(10),
@@ -71,10 +76,15 @@ class CodeMapperMCPServer {
 
       try {
         const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.path ? path.resolve(projectRoot, validated.path) : projectRoot;
-        
-        const circularDeps = await this.findCircularDependencies(targetPath, validated.maxDepth);
-        
+        const targetPath = validated.path
+          ? path.resolve(projectRoot, validated.path)
+          : projectRoot;
+
+        const circularDeps = await this.findCircularDependencies(
+          targetPath,
+          validated.maxDepth
+        );
+
         return {
           success: true,
           circularDependencies: circularDeps,
@@ -91,7 +101,7 @@ class CodeMapperMCPServer {
     });
 
     // Find orphaned files
-    this.server.setRequestHandler('code-mapper/find-orphaned', async (args) => {
+    this.server.setRequestHandler('code-mapper/find-orphaned', async args => {
       const schema = z.object({
         path: z.string().optional(),
         excludePatterns: z.array(z.string()).optional(),
@@ -100,10 +110,15 @@ class CodeMapperMCPServer {
 
       try {
         const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.path ? path.resolve(projectRoot, validated.path) : projectRoot;
-        
-        const orphanedFiles = await this.findOrphanedFiles(targetPath, validated.excludePatterns);
-        
+        const targetPath = validated.path
+          ? path.resolve(projectRoot, validated.path)
+          : projectRoot;
+
+        const orphanedFiles = await this.findOrphanedFiles(
+          targetPath,
+          validated.excludePatterns
+        );
+
         return {
           success: true,
           orphanedFiles,
@@ -120,7 +135,7 @@ class CodeMapperMCPServer {
     });
 
     // Generate visualization
-    this.server.setRequestHandler('code-mapper/visualize', async (args) => {
+    this.server.setRequestHandler('code-mapper/visualize', async args => {
       const schema = z.object({
         path: z.string().optional(),
         format: z.enum(['mermaid', 'dot', 'json']).default('mermaid'),
@@ -130,14 +145,16 @@ class CodeMapperMCPServer {
 
       try {
         const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.path ? path.resolve(projectRoot, validated.path) : projectRoot;
-        
+        const targetPath = validated.path
+          ? path.resolve(projectRoot, validated.path)
+          : projectRoot;
+
         const visualization = await this.generateVisualization(
-          targetPath, 
-          validated.format, 
+          targetPath,
+          validated.format,
           validated.focusNode
         );
-        
+
         return {
           success: true,
           visualization,
@@ -154,32 +171,40 @@ class CodeMapperMCPServer {
     });
 
     // Analyze module structure
-    this.server.setRequestHandler('code-mapper/analyze-structure', async (args) => {
-      const schema = z.object({
-        path: z.string().optional(),
-        analyzeTypes: z.array(z.string()).optional(),
-      });
-      const validated = schema.parse(args);
+    this.server.setRequestHandler(
+      'code-mapper/analyze-structure',
+      async args => {
+        const schema = z.object({
+          path: z.string().optional(),
+          analyzeTypes: z.array(z.string()).optional(),
+        });
+        const validated = schema.parse(args);
 
-      try {
-        const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.path ? path.resolve(projectRoot, validated.path) : projectRoot;
-        
-        const structure = await this.analyzeModuleStructure(targetPath, validated.analyzeTypes);
-        
-        return {
-          success: true,
-          structure,
-          timestamp: new Date().toISOString(),
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error.message,
-          timestamp: new Date().toISOString(),
-        };
+        try {
+          const projectRoot = path.resolve(__dirname, '..');
+          const targetPath = validated.path
+            ? path.resolve(projectRoot, validated.path)
+            : projectRoot;
+
+          const structure = await this.analyzeModuleStructure(
+            targetPath,
+            validated.analyzeTypes
+          );
+
+          return {
+            success: true,
+            structure,
+            timestamp: new Date().toISOString(),
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString(),
+          };
+        }
       }
-    });
+    );
   }
 
   async generateDependencyMap(targetPath, includeTypes) {
@@ -191,14 +216,14 @@ class CodeMapperMCPServer {
 
     // Get all source files
     const sourceFiles = await this.getSourceFiles(targetPath);
-    
+
     // Process each file to extract dependencies
     for (const file of sourceFiles) {
       const dependencies = await this.extractDependencies(file);
       const node = this.createNode(file, dependencies);
-      
+
       map.nodes.push(node);
-      
+
       // Create edges for dependencies
       for (const dep of dependencies) {
         const edge = this.createEdge(file, dep);
@@ -214,10 +239,10 @@ class CodeMapperMCPServer {
 
   async extractDependencies(filePath) {
     const dependencies = [];
-    
+
     try {
       const content = await fs.readFile(filePath, 'utf8');
-      
+
       // Extract import statements
       const importPatterns = [
         /import\s+.*\s+from\s+['"]([^'"]+)['"]/g,
@@ -230,7 +255,7 @@ class CodeMapperMCPServer {
         let match;
         while ((match = pattern.exec(content)) !== null) {
           const importPath = match[1];
-          
+
           // Resolve relative imports
           const resolvedPath = this.resolveImportPath(filePath, importPath);
           if (resolvedPath) {
@@ -257,7 +282,6 @@ class CodeMapperMCPServer {
           });
         }
       }
-
     } catch (error) {
       // File might not be readable
     }
@@ -276,7 +300,7 @@ class CodeMapperMCPServer {
 
     // Try different extensions
     const extensions = ['.js', '.ts', '.jsx', '.tsx', '.vue', '.svelte'];
-    
+
     for (const ext of extensions) {
       const pathWithExt = resolvedPath + ext;
       try {
@@ -315,7 +339,7 @@ class CodeMapperMCPServer {
 
   createNode(filePath, dependencies) {
     const relativePath = path.relative(path.resolve(__dirname, '..'), filePath);
-    
+
     return {
       id: relativePath,
       path: filePath,
@@ -329,9 +353,15 @@ class CodeMapperMCPServer {
   }
 
   createEdge(sourceFile, dependency) {
-    const sourceRelative = path.relative(path.resolve(__dirname, '..'), sourceFile);
-    const targetRelative = path.relative(path.resolve(__dirname, '..'), dependency.resolved);
-    
+    const sourceRelative = path.relative(
+      path.resolve(__dirname, '..'),
+      sourceFile
+    );
+    const targetRelative = path.relative(
+      path.resolve(__dirname, '..'),
+      dependency.resolved
+    );
+
     return {
       source: sourceRelative,
       target: targetRelative,
@@ -354,7 +384,7 @@ class CodeMapperMCPServer {
       '.json': 'json',
       '.md': 'markdown',
     };
-    
+
     return typeMap[ext] || 'unknown';
   }
 
@@ -422,7 +452,8 @@ class CodeMapperMCPServer {
     // Calculate dependency statistics
     const dependencies = map.nodes.map(node => node.dependencies);
     if (dependencies.length > 0) {
-      stats.averageDependencies = dependencies.reduce((a, b) => a + b, 0) / dependencies.length;
+      stats.averageDependencies =
+        dependencies.reduce((a, b) => a + b, 0) / dependencies.length;
       stats.maxDependencies = Math.max(...dependencies);
       stats.minDependencies = Math.min(...dependencies);
     }
@@ -436,10 +467,15 @@ class CodeMapperMCPServer {
     const recursionStack = new Set();
 
     const sourceFiles = await this.getSourceFiles(targetPath);
-    
+
     for (const file of sourceFiles) {
       if (!visited.has(file)) {
-        const cycles = this.findCyclesFromFile(file, visited, recursionStack, maxDepth);
+        const cycles = this.findCyclesFromFile(
+          file,
+          visited,
+          recursionStack,
+          maxDepth
+        );
         circularDeps.push(...cycles);
       }
     }
@@ -447,17 +483,25 @@ class CodeMapperMCPServer {
     return circularDeps;
   }
 
-  findCyclesFromFile(file, visited, recursionStack, maxDepth, currentDepth = 0) {
+  findCyclesFromFile(
+    file,
+    visited,
+    recursionStack,
+    maxDepth,
+    currentDepth = 0
+  ) {
     if (currentDepth > maxDepth) {
       return [];
     }
 
     if (recursionStack.has(file)) {
       // Found a cycle
-      return [{
-        cycle: Array.from(recursionStack).concat([file]),
-        length: recursionStack.size + 1,
-      }];
+      return [
+        {
+          cycle: Array.from(recursionStack).concat([file]),
+          length: recursionStack.size + 1,
+        },
+      ];
     }
 
     if (visited.has(file)) {
@@ -469,13 +513,13 @@ class CodeMapperMCPServer {
 
     const cycles = [];
     const dependencies = this.getDependenciesForFile(file);
-    
+
     for (const dep of dependencies) {
       const depCycles = this.findCyclesFromFile(
-        dep.resolved, 
-        visited, 
-        recursionStack, 
-        maxDepth, 
+        dep.resolved,
+        visited,
+        recursionStack,
+        maxDepth,
         currentDepth + 1
       );
       cycles.push(...depCycles);
@@ -506,8 +550,8 @@ class CodeMapperMCPServer {
 
     // Find files that are not referenced
     for (const file of allFiles) {
-      const isExcluded = excludePatterns.some(pattern => 
-        file.includes(pattern) || new RegExp(pattern).test(file)
+      const isExcluded = excludePatterns.some(
+        pattern => file.includes(pattern) || new RegExp(pattern).test(file)
       );
 
       if (!isExcluded && !referencedFiles.has(file)) {
@@ -543,7 +587,7 @@ class CodeMapperMCPServer {
 
   async generateVisualization(targetPath, format, focusNode) {
     const dependencyMap = await this.generateDependencyMap(targetPath);
-    
+
     switch (format) {
       case 'mermaid':
         return this.generateMermaidDiagram(dependencyMap, focusNode);
@@ -558,29 +602,29 @@ class CodeMapperMCPServer {
 
   generateMermaidDiagram(map, focusNode) {
     let diagram = 'graph TD\n';
-    
+
     // Add nodes
     for (const node of map.nodes) {
       const nodeId = this.sanitizeNodeId(node.id);
       const nodeLabel = path.basename(node.id);
-      
+
       if (focusNode && node.id.includes(focusNode)) {
         diagram += `  ${nodeId}["${nodeLabel}"]:::focus\n`;
       } else {
         diagram += `  ${nodeId}["${nodeLabel}"]\n`;
       }
     }
-    
+
     // Add edges
     for (const edge of map.edges) {
       const sourceId = this.sanitizeNodeId(edge.source);
       const targetId = this.sanitizeNodeId(edge.target);
       diagram += `  ${sourceId} --> ${targetId}\n`;
     }
-    
+
     // Add styling
     diagram += '\n  classDef focus fill:#ff9999,stroke:#333,stroke-width:3px\n';
-    
+
     return diagram;
   }
 
@@ -588,30 +632,30 @@ class CodeMapperMCPServer {
     let dot = 'digraph Dependencies {\n';
     dot += '  rankdir=LR;\n';
     dot += '  node [shape=box];\n\n';
-    
+
     // Add nodes
     for (const node of map.nodes) {
       const nodeId = this.sanitizeNodeId(node.id);
       const nodeLabel = path.basename(node.id);
-      
+
       if (focusNode && node.id.includes(focusNode)) {
         dot += `  ${nodeId} [label="${nodeLabel}", style=filled, fillcolor=red];\n`;
       } else {
         dot += `  ${nodeId} [label="${nodeLabel}"];\n`;
       }
     }
-    
+
     dot += '\n';
-    
+
     // Add edges
     for (const edge of map.edges) {
       const sourceId = this.sanitizeNodeId(edge.source);
       const targetId = this.sanitizeNodeId(edge.target);
       dot += `  ${sourceId} -> ${targetId};\n`;
     }
-    
+
     dot += '}\n';
-    
+
     return dot;
   }
 
@@ -628,15 +672,15 @@ class CodeMapperMCPServer {
     };
 
     const sourceFiles = await this.getSourceFiles(targetPath);
-    
+
     // Group files by directory structure
     const modules = new Map();
-    
+
     for (const file of sourceFiles) {
       const relativePath = path.relative(targetPath, file);
       const parts = relativePath.split(path.sep);
       const moduleName = parts[0] || 'root';
-      
+
       if (!modules.has(moduleName)) {
         modules.set(moduleName, []);
       }
@@ -651,9 +695,10 @@ class CodeMapperMCPServer {
 
     // Detect architectural patterns
     structure.patterns = this.detectPatterns(structure.modules);
-    
+
     // Generate recommendations
-    structure.recommendations = this.generateStructureRecommendations(structure);
+    structure.recommendations =
+      this.generateStructureRecommendations(structure);
 
     return structure;
   }
@@ -673,10 +718,10 @@ class CodeMapperMCPServer {
     for (const file of files) {
       const fileType = this.getFileType(file);
       analysis.types[fileType] = (analysis.types[fileType] || 0) + 1;
-      
+
       const fileComplexity = await this.calculateComplexity(file);
       analysis.complexity += fileComplexity;
-      
+
       const dependencies = await this.extractDependencies(file);
       for (const dep of dependencies) {
         analysis.dependencies.add(dep.resolved);
@@ -693,12 +738,15 @@ class CodeMapperMCPServer {
   async calculateCohesion(files) {
     // Simple cohesion calculation based on shared imports
     const sharedImports = new Map();
-    
+
     for (const file of files) {
       const dependencies = await this.extractDependencies(file);
       for (const dep of dependencies) {
         if (!dep.resolved.startsWith('node_modules')) {
-          sharedImports.set(dep.resolved, (sharedImports.get(dep.resolved) || 0) + 1);
+          sharedImports.set(
+            dep.resolved,
+            (sharedImports.get(dep.resolved) || 0) + 1
+          );
         }
       }
     }
@@ -715,7 +763,7 @@ class CodeMapperMCPServer {
 
     // Detect layered architecture
     const layerNames = ['controller', 'service', 'model', 'view', 'component'];
-    const layeredModules = modules.filter(module => 
+    const layeredModules = modules.filter(module =>
       layerNames.some(layer => module.name.toLowerCase().includes(layer))
     );
 
@@ -729,10 +777,11 @@ class CodeMapperMCPServer {
     }
 
     // Detect feature-based organization
-    const featureModules = modules.filter(module => 
-      module.name.includes('feature') || 
-      module.name.includes('domain') ||
-      module.files > 5
+    const featureModules = modules.filter(
+      module =>
+        module.name.includes('feature') ||
+        module.name.includes('domain') ||
+        module.files > 5
     );
 
     if (featureModules.length > 0) {
@@ -777,13 +826,13 @@ class CodeMapperMCPServer {
 
   async getSourceFiles(targetPath) {
     const files = [];
-    
+
     try {
       const entries = await fs.readdir(targetPath, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         const fullPath = path.join(targetPath, entry.name);
-        
+
         if (entry.isDirectory() && !this.shouldSkipDirectory(entry.name)) {
           const subFiles = await this.getSourceFiles(fullPath);
           files.push(...subFiles);
@@ -794,7 +843,7 @@ class CodeMapperMCPServer {
     } catch (error) {
       // Directory might not exist or be readable
     }
-    
+
     return files;
   }
 

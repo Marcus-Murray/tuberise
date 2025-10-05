@@ -30,7 +30,7 @@ class CodeSearchMCPServer {
 
   setupToolHandlers() {
     // Semantic search
-    this.server.setRequestHandler('code-search/semantic', async (args) => {
+    this.server.setRequestHandler('code-search/semantic', async args => {
       const schema = z.object({
         query: z.string(),
         path: z.string().optional(),
@@ -41,15 +41,17 @@ class CodeSearchMCPServer {
 
       try {
         const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.path ? path.resolve(projectRoot, validated.path) : projectRoot;
-        
+        const targetPath = validated.path
+          ? path.resolve(projectRoot, validated.path)
+          : projectRoot;
+
         const results = await this.semanticSearch(
-          validated.query, 
-          targetPath, 
-          validated.limit, 
+          validated.query,
+          targetPath,
+          validated.limit,
           validated.context
         );
-        
+
         return {
           success: true,
           query: validated.query,
@@ -67,7 +69,7 @@ class CodeSearchMCPServer {
     });
 
     // Regex search using ripgrep
-    this.server.setRequestHandler('code-search/regex', async (args) => {
+    this.server.setRequestHandler('code-search/regex', async args => {
       const schema = z.object({
         pattern: z.string(),
         path: z.string().optional(),
@@ -80,10 +82,12 @@ class CodeSearchMCPServer {
 
       try {
         const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.path ? path.resolve(projectRoot, validated.path) : projectRoot;
-        
+        const targetPath = validated.path
+          ? path.resolve(projectRoot, validated.path)
+          : projectRoot;
+
         const results = await this.regexSearch(targetPath, validated);
-        
+
         return {
           success: true,
           pattern: validated.pattern,
@@ -101,7 +105,7 @@ class CodeSearchMCPServer {
     });
 
     // Find function definitions
-    this.server.setRequestHandler('code-search/find-functions', async (args) => {
+    this.server.setRequestHandler('code-search/find-functions', async args => {
       const schema = z.object({
         functionName: z.string(),
         path: z.string().optional(),
@@ -111,14 +115,16 @@ class CodeSearchMCPServer {
 
       try {
         const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.path ? path.resolve(projectRoot, validated.path) : projectRoot;
-        
+        const targetPath = validated.path
+          ? path.resolve(projectRoot, validated.path)
+          : projectRoot;
+
         const results = await this.findFunctionDefinitions(
-          validated.functionName, 
-          targetPath, 
+          validated.functionName,
+          targetPath,
           validated.includeSignatures
         );
-        
+
         return {
           success: true,
           functionName: validated.functionName,
@@ -136,7 +142,7 @@ class CodeSearchMCPServer {
     });
 
     // Find imports and exports
-    this.server.setRequestHandler('code-search/find-imports', async (args) => {
+    this.server.setRequestHandler('code-search/find-imports', async args => {
       const schema = z.object({
         module: z.string(),
         path: z.string().optional(),
@@ -146,14 +152,16 @@ class CodeSearchMCPServer {
 
       try {
         const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.path ? path.resolve(projectRoot, validated.path) : projectRoot;
-        
+        const targetPath = validated.path
+          ? path.resolve(projectRoot, validated.path)
+          : projectRoot;
+
         const results = await this.findImportsExports(
-          validated.module, 
-          targetPath, 
+          validated.module,
+          targetPath,
           validated.importType
         );
-        
+
         return {
           success: true,
           module: validated.module,
@@ -171,7 +179,7 @@ class CodeSearchMCPServer {
     });
 
     // Find usages of a symbol
-    this.server.setRequestHandler('code-search/find-usages', async (args) => {
+    this.server.setRequestHandler('code-search/find-usages', async args => {
       const schema = z.object({
         symbol: z.string(),
         path: z.string().optional(),
@@ -181,14 +189,16 @@ class CodeSearchMCPServer {
 
       try {
         const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.path ? path.resolve(projectRoot, validated.path) : projectRoot;
-        
+        const targetPath = validated.path
+          ? path.resolve(projectRoot, validated.path)
+          : projectRoot;
+
         const results = await this.findSymbolUsages(
-          validated.symbol, 
-          targetPath, 
+          validated.symbol,
+          targetPath,
           validated.includeDeclarations
         );
-        
+
         return {
           success: true,
           symbol: validated.symbol,
@@ -206,7 +216,7 @@ class CodeSearchMCPServer {
     });
 
     // Search with context
-    this.server.setRequestHandler('code-search/context-search', async (args) => {
+    this.server.setRequestHandler('code-search/context-search', async args => {
       const schema = z.object({
         query: z.string(),
         context: z.string(),
@@ -217,15 +227,17 @@ class CodeSearchMCPServer {
 
       try {
         const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.path ? path.resolve(projectRoot, validated.path) : projectRoot;
-        
+        const targetPath = validated.path
+          ? path.resolve(projectRoot, validated.path)
+          : projectRoot;
+
         const results = await this.contextSearch(
-          validated.query, 
-          validated.context, 
-          targetPath, 
+          validated.query,
+          validated.context,
+          targetPath,
           validated.similarityThreshold
         );
-        
+
         return {
           success: true,
           query: validated.query,
@@ -246,19 +258,23 @@ class CodeSearchMCPServer {
 
   async semanticSearch(query, targetPath, limit, context) {
     const results = [];
-    
+
     // Get all source files
     const sourceFiles = await this.getSourceFiles(targetPath);
-    
+
     // Search for semantically related code
     for (const file of sourceFiles) {
       try {
         const content = await fs.readFile(file, 'utf8');
-        const semanticMatches = await this.findSemanticMatches(content, query, context);
-        
+        const semanticMatches = await this.findSemanticMatches(
+          content,
+          query,
+          context
+        );
+
         for (const match of semanticMatches) {
           if (results.length >= limit) break;
-          
+
           results.push({
             file: path.relative(targetPath, file),
             line: match.line,
@@ -276,32 +292,32 @@ class CodeSearchMCPServer {
 
     // Sort by relevance
     results.sort((a, b) => b.relevance - a.relevance);
-    
+
     return results.slice(0, limit);
   }
 
   async findSemanticMatches(content, query, context) {
     const matches = [];
     const lines = content.split('\n');
-    
+
     // Split query into keywords
     const keywords = query.toLowerCase().split(/\s+/);
-    
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       const lowerLine = line.toLowerCase();
-      
+
       // Calculate semantic relevance
       let relevance = 0;
       let matchedKeywords = 0;
-      
+
       for (const keyword of keywords) {
         if (lowerLine.includes(keyword)) {
           matchedKeywords++;
           relevance += this.calculateKeywordRelevance(keyword, lowerLine);
         }
       }
-      
+
       // Check for semantic synonyms
       const synonyms = this.getSynonyms(keywords);
       for (const synonym of synonyms) {
@@ -309,16 +325,16 @@ class CodeSearchMCPServer {
           relevance += 0.3;
         }
       }
-      
+
       // Context-based relevance
       if (context) {
         const contextRelevance = this.calculateContextRelevance(line, context);
         relevance += contextRelevance;
       }
-      
+
       // Normalize relevance
       relevance = relevance / keywords.length;
-      
+
       if (relevance > 0.3) {
         matches.push({
           line: i + 1,
@@ -330,65 +346,74 @@ class CodeSearchMCPServer {
         });
       }
     }
-    
+
     return matches;
   }
 
   calculateKeywordRelevance(keyword, line) {
     let relevance = 0.5; // Base relevance
-    
+
     // Higher relevance for exact matches
-    if (line.includes(` ${keyword} `) || line.includes(`${keyword}(`) || line.includes(`${keyword}.`)) {
+    if (
+      line.includes(` ${keyword} `) ||
+      line.includes(`${keyword}(`) ||
+      line.includes(`${keyword}.`)
+    ) {
       relevance += 0.3;
     }
-    
+
     // Higher relevance in comments or strings
-    if (line.includes('//') || line.includes('*') || line.includes('"') || line.includes("'")) {
+    if (
+      line.includes('//') ||
+      line.includes('*') ||
+      line.includes('"') ||
+      line.includes("'")
+    ) {
       relevance += 0.2;
     }
-    
+
     // Higher relevance in function names or variable names
     if (line.match(new RegExp(`\\b${keyword}\\b`))) {
       relevance += 0.4;
     }
-    
+
     return Math.min(relevance, 1.0);
   }
 
   getSynonyms(keywords) {
     const synonymMap = {
-      'function': ['method', 'fn', 'func', 'procedure'],
-      'variable': ['var', 'let', 'const', 'field', 'property'],
-      'class': ['component', 'module', 'object'],
-      'import': ['require', 'include', 'from'],
-      'export': ['return', 'module.exports', 'export default'],
-      'async': ['await', 'promise', 'then'],
-      'error': ['exception', 'throw', 'catch'],
-      'test': ['spec', 'should', 'expect', 'assert'],
-      'api': ['endpoint', 'route', 'service'],
-      'database': ['db', 'query', 'sql', 'model'],
+      function: ['method', 'fn', 'func', 'procedure'],
+      variable: ['var', 'let', 'const', 'field', 'property'],
+      class: ['component', 'module', 'object'],
+      import: ['require', 'include', 'from'],
+      export: ['return', 'module.exports', 'export default'],
+      async: ['await', 'promise', 'then'],
+      error: ['exception', 'throw', 'catch'],
+      test: ['spec', 'should', 'expect', 'assert'],
+      api: ['endpoint', 'route', 'service'],
+      database: ['db', 'query', 'sql', 'model'],
     };
-    
+
     const synonyms = [];
     for (const keyword of keywords) {
       if (synonymMap[keyword]) {
         synonyms.push(...synonymMap[keyword]);
       }
     }
-    
+
     return synonyms;
   }
 
   calculateContextRelevance(line, context) {
     const contextKeywords = context.toLowerCase().split(/\s+/);
     let relevance = 0;
-    
+
     for (const keyword of contextKeywords) {
       if (line.toLowerCase().includes(keyword)) {
         relevance += 0.1;
       }
     }
-    
+
     return Math.min(relevance, 0.5);
   }
 
@@ -444,34 +469,34 @@ class CodeSearchMCPServer {
 
   async ripgrepSearch(targetPath, options) {
     const args = ['rg', '--json', '--line-number', '--column'];
-    
+
     if (!options.caseSensitive) {
       args.push('--ignore-case');
     }
-    
+
     if (options.wholeWord) {
       args.push('--word-regexp');
     }
-    
+
     if (options.fileTypes && options.fileTypes.length > 0) {
       for (const type of options.fileTypes) {
         args.push('--type', type);
       }
     }
-    
+
     if (options.excludePatterns && options.excludePatterns.length > 0) {
       for (const pattern of options.excludePatterns) {
         args.push('--glob', `!${pattern}`);
       }
     }
-    
+
     args.push(options.pattern, targetPath);
-    
+
     try {
       const output = execSync(args.join(' '), { encoding: 'utf8' });
       const lines = output.split('\n').filter(line => line.trim());
       const results = [];
-      
+
       for (const line of lines) {
         try {
           const data = JSON.parse(line);
@@ -488,7 +513,7 @@ class CodeSearchMCPServer {
           // Skip invalid JSON lines
         }
       }
-      
+
       return results;
     } catch (error) {
       throw new Error(`Ripgrep search failed: ${error.message}`);
@@ -498,7 +523,7 @@ class CodeSearchMCPServer {
   async nativeRegexSearch(targetPath, options) {
     const results = [];
     const sourceFiles = await this.getSourceFiles(targetPath);
-    
+
     let pattern;
     try {
       const flags = options.caseSensitive ? 'g' : 'gi';
@@ -506,7 +531,7 @@ class CodeSearchMCPServer {
     } catch (error) {
       throw new Error(`Invalid regex pattern: ${error.message}`);
     }
-    
+
     for (const file of sourceFiles) {
       // Check file type filters
       if (options.fileTypes && options.fileTypes.length > 0) {
@@ -515,25 +540,25 @@ class CodeSearchMCPServer {
           continue;
         }
       }
-      
+
       // Check exclude patterns
       if (options.excludePatterns) {
-        const shouldExclude = options.excludePatterns.some(pattern => 
-          file.includes(pattern) || new RegExp(pattern).test(file)
+        const shouldExclude = options.excludePatterns.some(
+          pattern => file.includes(pattern) || new RegExp(pattern).test(file)
         );
         if (shouldExclude) {
           continue;
         }
       }
-      
+
       try {
         const content = await fs.readFile(file, 'utf8');
         const lines = content.split('\n');
-        
+
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i];
           let match;
-          
+
           while ((match = pattern.exec(line)) !== null) {
             results.push({
               file: path.relative(targetPath, file),
@@ -542,11 +567,11 @@ class CodeSearchMCPServer {
               text: line.trim(),
               match: match[0],
             });
-            
+
             // Prevent infinite loop for global regex
             if (!pattern.global) break;
           }
-          
+
           // Reset regex lastIndex for next line
           pattern.lastIndex = 0;
         }
@@ -554,31 +579,37 @@ class CodeSearchMCPServer {
         // Skip files that can't be read
       }
     }
-    
+
     return results;
   }
 
   async findFunctionDefinitions(functionName, targetPath, includeSignatures) {
     const results = [];
     const sourceFiles = await this.getSourceFiles(targetPath);
-    
+
     const patterns = [
       new RegExp(`function\\s+${this.escapeRegex(functionName)}\\s*\\(`, 'gi'),
-      new RegExp(`const\\s+${this.escapeRegex(functionName)}\\s*=\\s*\\(`, 'gi'),
+      new RegExp(
+        `const\\s+${this.escapeRegex(functionName)}\\s*=\\s*\\(`,
+        'gi'
+      ),
       new RegExp(`let\\s+${this.escapeRegex(functionName)}\\s*=\\s*\\(`, 'gi'),
       new RegExp(`var\\s+${this.escapeRegex(functionName)}\\s*=\\s*\\(`, 'gi'),
       new RegExp(`${this.escapeRegex(functionName)}\\s*:\\s*function`, 'gi'),
-      new RegExp(`${this.escapeRegex(functionName)}\\s*\\([^)]*\\)\\s*=>`, 'gi'),
+      new RegExp(
+        `${this.escapeRegex(functionName)}\\s*\\([^)]*\\)\\s*=>`,
+        'gi'
+      ),
     ];
-    
+
     for (const file of sourceFiles) {
       try {
         const content = await fs.readFile(file, 'utf8');
         const lines = content.split('\n');
-        
+
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i];
-          
+
           for (const pattern of patterns) {
             const match = pattern.exec(line);
             if (match) {
@@ -589,11 +620,11 @@ class CodeSearchMCPServer {
                 text: line.trim(),
                 type: 'definition',
               };
-              
+
               if (includeSignatures) {
                 result.signature = this.extractFunctionSignature(content, i);
               }
-              
+
               results.push(result);
               break;
             }
@@ -603,53 +634,60 @@ class CodeSearchMCPServer {
         // Skip files that can't be read
       }
     }
-    
+
     return results;
   }
 
   extractFunctionSignature(content, lineIndex) {
     const lines = content.split('\n');
     const startLine = lines[lineIndex];
-    
+
     // Try to extract the complete function signature
     let signature = startLine.trim();
-    
+
     // If the function signature spans multiple lines
     if (signature.includes('(') && !signature.includes(')')) {
-      for (let i = lineIndex + 1; i < Math.min(lineIndex + 5, lines.length); i++) {
+      for (
+        let i = lineIndex + 1;
+        i < Math.min(lineIndex + 5, lines.length);
+        i++
+      ) {
         signature += ' ' + lines[i].trim();
         if (signature.includes(')')) {
           break;
         }
       }
     }
-    
+
     return signature;
   }
 
   async findImportsExports(module, targetPath, importType) {
     const results = [];
     const sourceFiles = await this.getSourceFiles(targetPath);
-    
+
     const importPatterns = [
       new RegExp(`import.*from\\s+['"]${this.escapeRegex(module)}['"]`, 'gi'),
       new RegExp(`require\\s*\\(\\s*['"]${this.escapeRegex(module)}['"]`, 'gi'),
       new RegExp(`import\\s*['"]${this.escapeRegex(module)}['"]`, 'gi'),
     ];
-    
+
     const exportPatterns = [
       new RegExp(`export.*from\\s+['"]${this.escapeRegex(module)}['"]`, 'gi'),
-      new RegExp(`module\\.exports.*=.*require\\s*\\(\\s*['"]${this.escapeRegex(module)}['"]`, 'gi'),
+      new RegExp(
+        `module\\.exports.*=.*require\\s*\\(\\s*['"]${this.escapeRegex(module)}['"]`,
+        'gi'
+      ),
     ];
-    
+
     for (const file of sourceFiles) {
       try {
         const content = await fs.readFile(file, 'utf8');
         const lines = content.split('\n');
-        
+
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i];
-          
+
           if (importType === 'import' || importType === 'both') {
             for (const pattern of importPatterns) {
               const match = pattern.exec(line);
@@ -665,7 +703,7 @@ class CodeSearchMCPServer {
               }
             }
           }
-          
+
           if (importType === 'export' || importType === 'both') {
             for (const pattern of exportPatterns) {
               const match = pattern.exec(line);
@@ -686,29 +724,33 @@ class CodeSearchMCPServer {
         // Skip files that can't be read
       }
     }
-    
+
     return results;
   }
 
   async findSymbolUsages(symbol, targetPath, includeDeclarations) {
     const results = [];
     const sourceFiles = await this.getSourceFiles(targetPath);
-    
+
     // Create regex pattern for symbol usage
     const symbolPattern = new RegExp(`\\b${this.escapeRegex(symbol)}\\b`, 'gi');
-    
+
     for (const file of sourceFiles) {
       try {
         const content = await fs.readFile(file, 'utf8');
         const lines = content.split('\n');
-        
+
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i];
           let match;
-          
+
           while ((match = symbolPattern.exec(line)) !== null) {
-            const usageType = this.determineUsageType(line, symbol, match.index);
-            
+            const usageType = this.determineUsageType(
+              line,
+              symbol,
+              match.index
+            );
+
             if (includeDeclarations || usageType !== 'declaration') {
               results.push({
                 file: path.relative(targetPath, file),
@@ -719,11 +761,11 @@ class CodeSearchMCPServer {
                 context: this.getSymbolContext(line, symbol),
               });
             }
-            
+
             // Prevent infinite loop for global regex
             if (!symbolPattern.global) break;
           }
-          
+
           // Reset regex lastIndex for next line
           symbolPattern.lastIndex = 0;
         }
@@ -731,39 +773,45 @@ class CodeSearchMCPServer {
         // Skip files that can't be read
       }
     }
-    
+
     return results;
   }
 
   determineUsageType(line, symbol, index) {
     const beforeSymbol = line.substring(0, index).trim();
     const afterSymbol = line.substring(index + symbol.length).trim();
-    
+
     // Check for declarations
-    if (beforeSymbol.match(/\b(var|let|const|function|class|interface|type)\s*$/)) {
+    if (
+      beforeSymbol.match(/\b(var|let|const|function|class|interface|type)\s*$/)
+    ) {
       return 'declaration';
     }
-    
+
     // Check for assignments
     if (afterSymbol.startsWith('=')) {
       return 'assignment';
     }
-    
+
     // Check for function calls
     if (afterSymbol.startsWith('(')) {
       return 'call';
     }
-    
+
     // Check for property access
     if (afterSymbol.startsWith('.') || beforeSymbol.endsWith('.')) {
       return 'property';
     }
-    
+
     // Check for imports/exports
-    if (line.includes('import') || line.includes('export') || line.includes('require')) {
+    if (
+      line.includes('import') ||
+      line.includes('export') ||
+      line.includes('require')
+    ) {
       return 'import/export';
     }
-    
+
     return 'usage';
   }
 
@@ -777,12 +825,17 @@ class CodeSearchMCPServer {
   async contextSearch(query, context, targetPath, similarityThreshold) {
     const results = [];
     const sourceFiles = await this.getSourceFiles(targetPath);
-    
+
     for (const file of sourceFiles) {
       try {
         const content = await fs.readFile(file, 'utf8');
-        const matches = await this.findContextMatches(content, query, context, similarityThreshold);
-        
+        const matches = await this.findContextMatches(
+          content,
+          query,
+          context,
+          similarityThreshold
+        );
+
         for (const match of matches) {
           results.push({
             file: path.relative(targetPath, file),
@@ -798,10 +851,10 @@ class CodeSearchMCPServer {
         // Skip files that can't be read
       }
     }
-    
+
     // Sort by relevance
     results.sort((a, b) => b.relevance - a.relevance);
-    
+
     return results;
   }
 
@@ -810,11 +863,11 @@ class CodeSearchMCPServer {
     const lines = content.split('\n');
     const contextKeywords = context.toLowerCase().split(/\s+/);
     const queryKeywords = query.toLowerCase().split(/\s+/);
-    
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       const lowerLine = line.toLowerCase();
-      
+
       // Calculate context similarity
       let contextSimilarity = 0;
       for (const keyword of contextKeywords) {
@@ -822,7 +875,7 @@ class CodeSearchMCPServer {
           contextSimilarity += 1.0 / contextKeywords.length;
         }
       }
-      
+
       // Calculate query similarity
       let querySimilarity = 0;
       for (const keyword of queryKeywords) {
@@ -830,10 +883,10 @@ class CodeSearchMCPServer {
           querySimilarity += 1.0 / queryKeywords.length;
         }
       }
-      
+
       // Combined similarity
       const combinedSimilarity = (contextSimilarity + querySimilarity) / 2;
-      
+
       if (combinedSimilarity >= similarityThreshold) {
         matches.push({
           line: i + 1,
@@ -845,7 +898,7 @@ class CodeSearchMCPServer {
         });
       }
     }
-    
+
     return matches;
   }
 
@@ -855,13 +908,13 @@ class CodeSearchMCPServer {
 
   async getSourceFiles(targetPath) {
     const files = [];
-    
+
     try {
       const entries = await fs.readdir(targetPath, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         const fullPath = path.join(targetPath, entry.name);
-        
+
         if (entry.isDirectory() && !this.shouldSkipDirectory(entry.name)) {
           const subFiles = await this.getSourceFiles(fullPath);
           files.push(...subFiles);
@@ -872,7 +925,7 @@ class CodeSearchMCPServer {
     } catch (error) {
       // Directory might not exist or be readable
     }
-    
+
     return files;
   }
 
@@ -891,7 +944,23 @@ class CodeSearchMCPServer {
   }
 
   isSourceFile(fileName) {
-    const sourceExtensions = ['.js', '.ts', '.jsx', '.tsx', '.vue', '.svelte', '.py', '.java', '.cpp', '.c', '.cs', '.php', '.rb', '.go', '.rs'];
+    const sourceExtensions = [
+      '.js',
+      '.ts',
+      '.jsx',
+      '.tsx',
+      '.vue',
+      '.svelte',
+      '.py',
+      '.java',
+      '.cpp',
+      '.c',
+      '.cs',
+      '.php',
+      '.rb',
+      '.go',
+      '.rs',
+    ];
     return sourceExtensions.some(ext => fileName.endsWith(ext));
   }
 

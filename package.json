@@ -38,6 +38,7 @@
   },
   "packageManager": "npm@10.0.0",
   "dependencies": {
+    "@clerk/nextjs": "^6.33.2",
     "@prisma/client": "^5.22.0"
   },
   "overrides": {

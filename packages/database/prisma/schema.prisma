@@ -11,14 +11,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User Management
+// User Management (Clerk Integration)
 model User {
-  id            String    @id @default(cuid())
+  id            String    @id // Clerk User ID
   email         String    @unique
-  name          String?
-  image         String?
-  googleId      String?   @unique
-  emailVerified DateTime?
+  firstName     String?
+  lastName      String?
+  imageUrl      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   // Subscription
   subscription  Subscription?
@@ -29,10 +30,6 @@ model User {
 
   // Notion Integration
   notionWorkspaces NotionWorkspace[]
-
-  // Timestamps
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
 
   // Audit fields
   lastLoginAt   DateTime?

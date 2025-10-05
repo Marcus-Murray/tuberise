@@ -29,7 +29,7 @@ class CodeHealthMCPServer {
 
   setupToolHandlers() {
     // Analyze code health
-    this.server.setRequestHandler('code-health/analyze', async (args) => {
+    this.server.setRequestHandler('code-health/analyze', async args => {
       const schema = z.object({
         path: z.string().optional(),
         includeMetrics: z.array(z.string()).optional(),
@@ -38,10 +38,15 @@ class CodeHealthMCPServer {
 
       try {
         const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.path ? path.resolve(projectRoot, validated.path) : projectRoot;
-        
-        const healthReport = await this.analyzeCodeHealth(targetPath, validated.includeMetrics);
-        
+        const targetPath = validated.path
+          ? path.resolve(projectRoot, validated.path)
+          : projectRoot;
+
+        const healthReport = await this.analyzeCodeHealth(
+          targetPath,
+          validated.includeMetrics
+        );
+
         return {
           success: true,
           report: healthReport,
@@ -57,7 +62,7 @@ class CodeHealthMCPServer {
     });
 
     // Check specific metrics
-    this.server.setRequestHandler('code-health/check-metric', async (args) => {
+    this.server.setRequestHandler('code-health/check-metric', async args => {
       const schema = z.object({
         metric: z.string(),
         path: z.string().optional(),
@@ -67,10 +72,16 @@ class CodeHealthMCPServer {
 
       try {
         const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.path ? path.resolve(projectRoot, validated.path) : projectRoot;
-        
-        const result = await this.checkMetric(targetPath, validated.metric, validated.threshold);
-        
+        const targetPath = validated.path
+          ? path.resolve(projectRoot, validated.path)
+          : projectRoot;
+
+        const result = await this.checkMetric(
+          targetPath,
+          validated.metric,
+          validated.threshold
+        );
+
         return {
           success: true,
           metric: validated.metric,
@@ -87,7 +98,7 @@ class CodeHealthMCPServer {
     });
 
     // Generate health recommendations
-    this.server.setRequestHandler('code-health/recommendations', async (args) => {
+    this.server.setRequestHandler('code-health/recommendations', async args => {
       const schema = z.object({
         path: z.string().optional(),
         focusAreas: z.array(z.string()).optional(),
@@ -96,10 +107,15 @@ class CodeHealthMCPServer {
 
       try {
         const projectRoot = path.resolve(__dirname, '..');
-        const targetPath = validated.path ? path.resolve(projectRoot, validated.path) : projectRoot;
-        
-        const recommendations = await this.generateRecommendations(targetPath, validated.focusAreas);
-        
+        const targetPath = validated.path
+          ? path.resolve(projectRoot, validated.path)
+          : projectRoot;
+
+        const recommendations = await this.generateRecommendations(
+          targetPath,
+          validated.focusAreas
+        );
+
         return {
           success: true,
           recommendations,
@@ -147,7 +163,10 @@ class CodeHealthMCPServer {
     analysis.overallScore = analysis.overallScore / metricsToAnalyze.length;
     analysis.summary = this.generateSummary(analysis.metrics);
     analysis.issues = this.identifyIssues(analysis.metrics);
-    analysis.recommendations = this.generateRecommendations(targetPath, metricsToAnalyze);
+    analysis.recommendations = this.generateRecommendations(
+      targetPath,
+      metricsToAnalyze
+    );
 
     return analysis;
   }
@@ -201,7 +220,7 @@ class CodeHealthMCPServer {
     }
 
     const avgComplexity = fileCount > 0 ? totalComplexity / fileCount : 0;
-    const score = Math.max(0, 100 - (avgComplexity * 5));
+    const score = Math.max(0, 100 - avgComplexity * 5);
 
     return {
       score: Math.round(score),
@@ -251,11 +270,11 @@ class CodeHealthMCPServer {
       try {
         const content = await fs.readFile(file, 'utf8');
         const blocks = this.extractCodeBlocks(content);
-        
+
         for (const block of blocks) {
           totalBlocks++;
           const hash = this.hashCode(block);
-          
+
           if (codeBlocks.has(hash)) {
             duplicateBlocks++;
             codeBlocks.get(hash).files.push(file);
@@ -271,7 +290,8 @@ class CodeHealthMCPServer {
       }
     }
 
-    const duplicationRatio = totalBlocks > 0 ? (duplicateBlocks / totalBlocks) * 100 : 0;
+    const duplicationRatio =
+      totalBlocks > 0 ? (duplicateBlocks / totalBlocks) * 100 : 0;
     const score = Math.max(0, 100 - duplicationRatio * 2);
 
     return {
@@ -288,14 +308,14 @@ class CodeHealthMCPServer {
   extractCodeBlocks(content) {
     const blocks = [];
     const lines = content.split('\n');
-    
+
     let currentBlock = '';
     let inFunction = false;
     let braceCount = 0;
 
     for (const line of lines) {
       const trimmedLine = line.trim();
-      
+
       // Detect function start
       if (trimmedLine.includes('function') || trimmedLine.includes('=>')) {
         if (currentBlock && currentBlock.length > 50) {
@@ -309,11 +329,11 @@ class CodeHealthMCPServer {
 
       if (inFunction) {
         currentBlock += '\n' + line;
-        
+
         // Count braces to detect function end
         braceCount += (line.match(/{/g) || []).length;
         braceCount -= (line.match(/}/g) || []).length;
-        
+
         if (braceCount === 0 && trimmedLine.includes('}')) {
           if (currentBlock.length > 50) {
             blocks.push(currentBlock);
@@ -331,7 +351,7 @@ class CodeHealthMCPServer {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32bit integer
     }
     return hash.toString();
@@ -341,7 +361,7 @@ class CodeHealthMCPServer {
     // Look for test files and analyze coverage
     const testFiles = await this.getTestFiles(targetPath);
     const sourceFiles = await this.getSourceFiles(targetPath);
-    
+
     const coverageRatio = testFiles.length / Math.max(sourceFiles.length, 1);
     const score = Math.min(100, coverageRatio * 100);
 
@@ -358,21 +378,49 @@ class CodeHealthMCPServer {
   async analyzeSecurity(targetPath) {
     const files = await this.getSourceFiles(targetPath);
     const securityIssues = [];
-    
+
     const securityPatterns = [
-      { pattern: /eval\s*\(/, severity: 'high', message: 'Use of eval() function' },
-      { pattern: /innerHTML\s*=/, severity: 'medium', message: 'Direct innerHTML assignment' },
-      { pattern: /document\.write/, severity: 'medium', message: 'Use of document.write' },
-      { pattern: /localStorage\.setItem/, severity: 'low', message: 'Local storage usage' },
-      { pattern: /sessionStorage\.setItem/, severity: 'low', message: 'Session storage usage' },
-      { pattern: /\.sql\s*\+/, severity: 'high', message: 'Potential SQL injection' },
-      { pattern: /password\s*=\s*['"]\w+['"]/, severity: 'high', message: 'Hardcoded password' },
+      {
+        pattern: /eval\s*\(/,
+        severity: 'high',
+        message: 'Use of eval() function',
+      },
+      {
+        pattern: /innerHTML\s*=/,
+        severity: 'medium',
+        message: 'Direct innerHTML assignment',
+      },
+      {
+        pattern: /document\.write/,
+        severity: 'medium',
+        message: 'Use of document.write',
+      },
+      {
+        pattern: /localStorage\.setItem/,
+        severity: 'low',
+        message: 'Local storage usage',
+      },
+      {
+        pattern: /sessionStorage\.setItem/,
+        severity: 'low',
+        message: 'Session storage usage',
+      },
+      {
+        pattern: /\.sql\s*\+/,
+        severity: 'high',
+        message: 'Potential SQL injection',
+      },
+      {
+        pattern: /password\s*=\s*['"]\w+['"]/,
+        severity: 'high',
+        message: 'Hardcoded password',
+      },
     ];
 
     for (const file of files) {
       try {
         const content = await fs.readFile(file, 'utf8');
-        
+
         for (const { pattern, severity, message } of securityPatterns) {
           if (pattern.test(content)) {
             securityIssues.push({
@@ -388,11 +436,23 @@ class CodeHealthMCPServer {
       }
     }
 
-    const highSeverityIssues = securityIssues.filter(issue => issue.severity === 'high').length;
-    const mediumSeverityIssues = securityIssues.filter(issue => issue.severity === 'medium').length;
-    const lowSeverityIssues = securityIssues.filter(issue => issue.severity === 'low').length;
+    const highSeverityIssues = securityIssues.filter(
+      issue => issue.severity === 'high'
+    ).length;
+    const mediumSeverityIssues = securityIssues.filter(
+      issue => issue.severity === 'medium'
+    ).length;
+    const lowSeverityIssues = securityIssues.filter(
+      issue => issue.severity === 'low'
+    ).length;
 
-    const score = Math.max(0, 100 - (highSeverityIssues * 20) - (mediumSeverityIssues * 10) - (lowSeverityIssues * 5));
+    const score = Math.max(
+      0,
+      100 -
+        highSeverityIssues * 20 -
+        mediumSeverityIssues * 10 -
+        lowSeverityIssues * 5
+    );
 
     return {
       score: Math.round(score),
@@ -421,17 +481,38 @@ class CodeHealthMCPServer {
     const performanceIssues = [];
 
     const performancePatterns = [
-      { pattern: /for\s*\(\s*var\s+\w+\s*=\s*0\s*;\s*\w+\s*<\s*\w+\.length\s*;\s*\w+\+\+\)/, severity: 'medium', message: 'Inefficient for loop' },
-      { pattern: /document\.getElementById.*for\s*\(/, severity: 'high', message: 'DOM query in loop' },
-      { pattern: /setInterval.*\d+/, severity: 'low', message: 'setInterval usage' },
-      { pattern: /setTimeout.*\d+/, severity: 'low', message: 'setTimeout usage' },
-      { pattern: /\.innerHTML\s*=.*\+/, severity: 'medium', message: 'String concatenation in innerHTML' },
+      {
+        pattern:
+          /for\s*\(\s*var\s+\w+\s*=\s*0\s*;\s*\w+\s*<\s*\w+\.length\s*;\s*\w+\+\+\)/,
+        severity: 'medium',
+        message: 'Inefficient for loop',
+      },
+      {
+        pattern: /document\.getElementById.*for\s*\(/,
+        severity: 'high',
+        message: 'DOM query in loop',
+      },
+      {
+        pattern: /setInterval.*\d+/,
+        severity: 'low',
+        message: 'setInterval usage',
+      },
+      {
+        pattern: /setTimeout.*\d+/,
+        severity: 'low',
+        message: 'setTimeout usage',
+      },
+      {
+        pattern: /\.innerHTML\s*=.*\+/,
+        severity: 'medium',
+        message: 'String concatenation in innerHTML',
+      },
     ];
 
     for (const file of files) {
       try {
         const content = await fs.readFile(file, 'utf8');
-        
+
         for (const { pattern, severity, message } of performancePatterns) {
           if (pattern.test(content)) {
             performanceIssues.push({
@@ -447,7 +528,7 @@ class CodeHealthMCPServer {
       }
     }
 
-    const score = Math.max(0, 100 - (performanceIssues.length * 10));
+    const score = Math.max(0, 100 - performanceIssues.length * 10);
 
     return {
       score: Math.round(score),
@@ -478,7 +559,7 @@ class CodeHealthMCPServer {
         // Count functions and classes
         const functionMatches = content.match(/\bfunction\s+\w+/g) || [];
         const classMatches = content.match(/\bclass\s+\w+/g) || [];
-        
+
         totalFunctions += functionMatches.length;
         totalClasses += classMatches.length;
       } catch (error) {
@@ -487,10 +568,11 @@ class CodeHealthMCPServer {
     }
 
     const avgLinesPerFile = files.length > 0 ? totalLines / files.length : 0;
-    const avgFunctionsPerFile = files.length > 0 ? totalFunctions / files.length : 0;
+    const avgFunctionsPerFile =
+      files.length > 0 ? totalFunctions / files.length : 0;
     const longFileRatio = files.length > 0 ? longFiles / files.length : 0;
 
-    const score = Math.max(0, 100 - (avgLinesPerFile / 10) - (longFileRatio * 50));
+    const score = Math.max(0, 100 - avgLinesPerFile / 10 - longFileRatio * 50);
 
     return {
       score: Math.round(score),
@@ -510,13 +592,15 @@ class CodeHealthMCPServer {
   async analyzeDependencies(targetPath) {
     try {
       const packageJsonPath = path.join(targetPath, 'package.json');
-      const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
-      
+      const packageJson = JSON.parse(
+        await fs.readFile(packageJsonPath, 'utf8')
+      );
+
       const dependencies = Object.keys(packageJson.dependencies || {});
       const devDependencies = Object.keys(packageJson.devDependencies || {});
-      
+
       const totalDeps = dependencies.length + devDependencies.length;
-      const score = Math.max(0, 100 - (totalDeps / 2)); // Penalize too many dependencies
+      const score = Math.max(0, 100 - totalDeps / 2); // Penalize too many dependencies
 
       return {
         score: Math.round(score),
@@ -551,16 +635,21 @@ class CodeHealthMCPServer {
         totalLines += lines.length;
 
         // Count comment lines
-        const commentLines = lines.filter(line => 
-          line.trim().startsWith('//') || 
-          line.trim().startsWith('/*') || 
-          line.trim().startsWith('*')
+        const commentLines = lines.filter(
+          line =>
+            line.trim().startsWith('//') ||
+            line.trim().startsWith('/*') ||
+            line.trim().startsWith('*')
         ).length;
 
         totalComments += commentLines;
 
         // Check if file has documentation
-        if (content.includes('/**') || content.includes('@param') || content.includes('@returns')) {
+        if (
+          content.includes('/**') ||
+          content.includes('@param') ||
+          content.includes('@returns')
+        ) {
           documentedFiles++;
         }
       } catch (error) {
@@ -568,8 +657,10 @@ class CodeHealthMCPServer {
       }
     }
 
-    const documentationRatio = totalLines > 0 ? (totalComments / totalLines) * 100 : 0;
-    const fileDocumentationRatio = files.length > 0 ? (documentedFiles / files.length) * 100 : 0;
+    const documentationRatio =
+      totalLines > 0 ? (totalComments / totalLines) * 100 : 0;
+    const fileDocumentationRatio =
+      files.length > 0 ? (documentedFiles / files.length) * 100 : 0;
     const score = (documentationRatio + fileDocumentationRatio) / 2;
 
     return {
@@ -587,13 +678,13 @@ class CodeHealthMCPServer {
 
   async getSourceFiles(targetPath) {
     const files = [];
-    
+
     try {
       const entries = await fs.readdir(targetPath, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         const fullPath = path.join(targetPath, entry.name);
-        
+
         if (entry.isDirectory() && !this.shouldSkipDirectory(entry.name)) {
           const subFiles = await this.getSourceFiles(fullPath);
           files.push(...subFiles);
@@ -604,19 +695,19 @@ class CodeHealthMCPServer {
     } catch (error) {
       // Directory might not exist or be readable
     }
-    
+
     return files;
   }
 
   async getTestFiles(targetPath) {
     const files = [];
-    
+
     try {
       const entries = await fs.readdir(targetPath, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         const fullPath = path.join(targetPath, entry.name);
-        
+
         if (entry.isDirectory() && !this.shouldSkipDirectory(entry.name)) {
           const subFiles = await this.getTestFiles(fullPath);
           files.push(...subFiles);
@@ -627,7 +718,7 @@ class CodeHealthMCPServer {
     } catch (error) {
       // Directory might not exist or be readable
     }
-    
+
     return files;
   }
 
@@ -720,7 +811,8 @@ class CodeHealthMCPServer {
       priority: 'high',
       category: 'general',
       title: 'Improve test coverage',
-      description: 'Add more unit and integration tests to increase code reliability',
+      description:
+        'Add more unit and integration tests to increase code reliability',
       action: 'Create test files for components and services',
     });
 
@@ -736,7 +828,8 @@ class CodeHealthMCPServer {
       priority: 'medium',
       category: 'maintainability',
       title: 'Improve documentation',
-      description: 'Add JSDoc comments and README files for better maintainability',
+      description:
+        'Add JSDoc comments and README files for better maintainability',
       action: 'Document all public APIs and complex functions',
     });
 
@@ -745,7 +838,7 @@ class CodeHealthMCPServer {
 
   async checkMetric(targetPath, metric, threshold) {
     const result = await this.analyzeMetric(targetPath, metric);
-    
+
     return {
       metric,
       score: result.score,
