@@ -1,0 +1,38 @@
+{
+  "test-ai-validation-mcp.js": {
+    "success": true,
+    "output": "{\"result\":{\"tools\":[{\"name\":\"test-tool\",\"description\":\"A simple test tool for validation\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"message\":{\"type\":\"string\",\"description\":\"Test message to process\"}},\"required\":[\"message\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}]},\"jsonrpc\":\"2.0\",\"id\":1}",
+    "error": "Test AI Validation MCP server running on stdio",
+    "timestamp": "2025-10-05T03:51:16.385Z"
+  },
+  "test-code-health-mcp.js": {
+    "success": true,
+    "output": "{\"result\":{\"tools\":[{\"name\":\"analyze-health\",\"description\":\"Analyze code health metrics\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"Path to analyze (defaults to current directory)\"}},\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}]},\"jsonrpc\":\"2.0\",\"id\":1}",
+    "error": "Test Code Health MCP server running on stdio",
+    "timestamp": "2025-10-05T03:51:16.386Z"
+  },
+  "test-code-mapper-mcp.js": {
+    "success": true,
+    "output": "{\"result\":{\"tools\":[{\"name\":\"generate-map\",\"description\":\"Generate code dependency map\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"Path to analyze\"},\"outputFormat\":{\"type\":\"string\",\"enum\":[\"json\",\"graph\",\"text\"],\"default\":\"json\",\"description\":\"Output format\"}},\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}]},\"jsonrpc\":\"2.0\",\"id\":1}",
+    "error": "Test Code Mapper MCP server running on stdio",
+    "timestamp": "2025-10-05T03:51:16.386Z"
+  },
+  "test-code-search-mcp.js": {
+    "success": true,
+    "output": "{\"result\":{\"tools\":[{\"name\":\"semantic-search\",\"description\":\"Perform semantic code search\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\",\"description\":\"Search query\"},\"path\":{\"type\":\"string\",\"description\":\"Path to search in\"},\"limit\":{\"type\":\"number\",\"default\":20,\"description\":\"Maximum number of results\"}},\"required\":[\"query\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}]},\"jsonrpc\":\"2.0\",\"id\":1}",
+    "error": "Test Code Search MCP server running on stdio",
+    "timestamp": "2025-10-05T03:51:16.386Z"
+  },
+  "test-session-analyzer-mcp.js": {
+    "success": true,
+    "output": "{\"result\":{\"tools\":[{\"name\":\"analyze-jwt\",\"description\":\"Analyze JWT token security\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"token\":{\"type\":\"string\",\"description\":\"JWT token to analyze\"},\"secret\":{\"type\":\"string\",\"description\":\"Secret for signature verification\"},\"verifySignature\":{\"type\":\"boolean\",\"default\":false,\"description\":\"Whether to verify signature\"}},\"required\":[\"token\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}]},\"jsonrpc\":\"2.0\",\"id\":1}",
+    "error": "Test Session Analyzer MCP server running on stdio",
+    "timestamp": "2025-10-05T03:51:16.386Z"
+  },
+  "test-typescript-react-agent-mcp.js": {
+    "success": true,
+    "output": "{\"result\":{\"tools\":[{\"name\":\"store-memory\",\"description\":\"Store information in memory bank\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"key\":{\"type\":\"string\",\"description\":\"Memory key\"},\"value\":{\"type\":\"string\",\"description\":\"Value to store\"},\"category\":{\"type\":\"string\",\"enum\":[\"project\",\"component\",\"pattern\",\"issue\",\"solution\"],\"default\":\"project\",\"description\":\"Memory category\"}},\"required\":[\"key\",\"value\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}},{\"name\":\"retrieve-memory\",\"description\":\"Retrieve information from memory bank\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"key\":{\"type\":\"string\",\"description\":\"Memory key to retrieve\"},\"category\":{\"type\":\"string\",\"enum\":[\"project\",\"component\",\"pattern\",\"issue\",\"solution\"],\"description\":\"Memory category to search\"}},\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}]},\"jsonrpc\":\"2.0\",\"id\":1}",
+    "error": "Test TypeScript React Agent MCP server running on stdio",
+    "timestamp": "2025-10-05T03:51:16.401Z"
+  }
+}
