@@ -33,11 +33,11 @@ export async function healthCheck(): Promise<{
   error?: string;
 }> {
   const startTime = Date.now();
-  
+
   try {
     await prisma.$queryRaw`SELECT 1`;
     const latency = Date.now() - startTime;
-    
+
     return {
       status: 'healthy',
       latency,

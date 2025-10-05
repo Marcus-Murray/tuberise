@@ -57,7 +57,7 @@ tuberise/
 
 ### Prerequisites
 
-- **Node.js** 18+ 
+- **Node.js** 18+
 - **npm** 8+
 - **Docker** & **Docker Compose**
 - **Git**
