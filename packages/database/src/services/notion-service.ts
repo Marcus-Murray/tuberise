@@ -1,6 +1,9 @@
-import { prisma } from '../client';
+/**
+ * Legacy Notion Service
+ * This file now redirects to the modular Notion service
+ *
+ * @deprecated Use the modular Notion service in ./modules/notion/ instead
+ */
 
-export class NotionService {
-  // Placeholder for Notion service implementation
-  // Will be implemented in Slice 5
-}
+// Re-export from modular Notion service
+export * from './modules/notion';

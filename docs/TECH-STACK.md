@@ -71,11 +71,11 @@ Tuberise Analytics is built using a modern, scalable, and maintainable technolog
 
 ### **Authentication & Security**
 
-- **Clerk** - Modern authentication and user management
-- **JWT** - JSON Web Tokens for stateless authentication (managed by Clerk)
+- **NextAuth.js** - Authentication library for Next.js
+- **JWT** - JSON Web Tokens for stateless authentication
+- **bcrypt** - Password hashing and security
 - **Helmet** - Security middleware for Express
 - **Rate Limiting** - API rate limiting and abuse prevention
-- **OAuth 2.0** - Secure third-party authentication (via Clerk)
 
 ### **API & Integration**
 
@@ -330,8 +330,8 @@ NOTION_API_KEY=...
 OPENAI_API_KEY=...
 
 # Authentication
-CLERK_PUBLISHABLE_KEY=...
-CLERK_SECRET_KEY=...
+NEXTAUTH_SECRET=...
+JWT_SECRET=...
 
 # Services
 STRIPE_SECRET_KEY=...

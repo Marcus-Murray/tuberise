@@ -51,7 +51,7 @@ export const errorHandler = (
   } else if (error.name === 'CastError') {
     statusCode = 400;
     message = 'Invalid ID format';
-  } else if (error.code === 11000) {
+  } else if ((error as any).code === 11000) {
     statusCode = 400;
     message = 'Duplicate field value';
   } else if (error.name === 'JsonWebTokenError') {

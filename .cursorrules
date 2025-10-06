@@ -34,6 +34,243 @@ This is a comprehensive SaaS platform for YouTube analytics with Notion integrat
 - Performance: <2s page load times
 - Intuitive navigation and clear feedback
 
+### 5. Simple & Modular Architecture
+
+- **MANDATORY**: Follow Simple & Modular Approach for all development
+- **Easier Debugging**: Issues isolated to one module
+- **Faster Development**: Work on one feature at a time
+- **Better Testing**: Each module tested independently
+- **Easier Updates**: Change one module without affecting others
+- **Clear Dependencies**: Easy to see what depends on what
+
+#### Modular Architecture Rules:
+
+1. **Module Isolation**: Each module must be self-contained and independent
+2. **No Cross-Dependencies**: Modules cannot depend on each other directly
+3. **Single Responsibility**: Each module handles only one concern
+4. **Clear Interfaces**: Simple, intuitive function signatures
+5. **Independent Testing**: Each module must be testable independently
+
+#### Module Structure Requirements:
+
+```
+module-name/
+├── index.ts              # Main exports
+├── types.ts              # Module-specific types
+├── utils.ts              # Module utilities
+└── submodules/           # Optional sub-modules
+    ├── feature-a.ts
+    └── feature-b.ts
+```
+
+#### Anti-Patterns to Avoid:
+
+- ❌ **God Modules**: One module doing everything
+- ❌ **Circular Dependencies**: Module A depends on B, B depends on A
+- ❌ **Tight Coupling**: Modules directly instantiating each other
+- ❌ **Hidden Dependencies**: Global variables or unclear imports
+
+#### Module Creation Checklist:
+
+- [ ] **Single Responsibility**: One clear purpose
+- [ ] **Independence**: Works without other modules
+- [ ] **Testability**: Can be tested in isolation
+- [ ] **Clarity**: Purpose is immediately clear
+- [ ] **Simplicity**: Simplest solution that works
+
+### 6. Systematic Problem Solving
+
+- **MANDATORY**: Use 7-Possible-Solutions Thinking Framework for complex problems
+- **ALWAYS** analyze 7 different approaches before implementation
+- **ALWAYS** provide detailed pros/cons for each solution
+- **ALWAYS** include feasibility, effectiveness, and risk assessments
+- **ALWAYS** provide clear rationale for the chosen solution
+- **ALWAYS** create an implementation plan with next steps
+
+#### 7-Possible-Solutions Framework Structure:
+
+1. **Problem Analysis**: Clear definition, constraints, context
+2. **Solution Generation**: 7 distinct approaches with pros/cons
+3. **Evaluation Matrix**: Feasibility, effectiveness, risk, alignment
+4. **Selection & Implementation**: Chosen solution rationale and plan
+
+**Activation Triggers**: Complex problems, architectural decisions, multiple approaches, debugging issues, optimization challenges
+
+## CRITICAL DEVELOPMENT RULES
+
+### Authorization Requirements
+
+- **NEVER** make changes without explicit user permission
+- **NEVER** delete files without explicit user approval
+- **NEVER** modify existing functionality without user consent
+- **ALWAYS** ask before implementing new features
+- **ALWAYS** confirm before making architectural changes
+
+#### Permission Format
+
+When requesting permission, use this exact format:
+
+```
+**Action Required:** [Specific action description]
+**Files Affected:** [List specific files]
+**Risk Level:** [Low/Medium/High]
+**Permission needed:** May I proceed with [specific action]?
+```
+
+### Change Management
+
+- Make **ONE** change at a time
+- Wait for user approval before proceeding to the next change
+- **NEVER** batch multiple changes together
+- **NEVER** make "quick fixes" without permission
+- Document all changes with clear rationale
+
+### Code Quality Standards
+
+- **NEVER** commit broken code
+- **NEVER** skip error handling
+- **ALWAYS** include comprehensive error handling
+- **ALWAYS** validate all inputs
+- **ALWAYS** include proper logging
+- **ALWAYS** write tests for new functionality
+
+### Security Requirements
+
+- **NEVER** hardcode secrets or API keys
+- **ALWAYS** use environment variables for sensitive data
+- **ALWAYS** validate and sanitize all inputs
+- **ALWAYS** implement proper authentication checks
+- **ALWAYS** follow OWASP security guidelines
+
+## COMPLIANCE FRAMEWORK
+
+### GDPR/CCPA Compliance
+
+- **ALWAYS** implement data minimization principles
+- **ALWAYS** provide user consent management
+- **ALWAYS** implement right to access, rectification, erasure
+- **ALWAYS** support data portability
+- **ALWAYS** implement privacy by design
+- **ALWAYS** provide 30-day deletion guarantee
+
+### API Compliance
+
+- **ALWAYS** follow YouTube API v3 Developer Policies
+- **ALWAYS** respect Notion API Terms of Service
+- **ALWAYS** implement rate limiting and quota management
+- **ALWAYS** validate content against platform policies
+- **ALWAYS** monitor API usage and compliance
+
+### AI Compliance
+
+- **ALWAYS** implement bias detection and mitigation
+- **ALWAYS** ensure transparency and explainability
+- **ALWAYS** maintain human oversight
+- **ALWAYS** follow ethical AI principles
+- **ALWAYS** comply with EU AI Act requirements
+
+### Compliance Services Required
+
+- **GDPRComplianceService**: Data export, correction, deletion
+- **APIComplianceService**: Quota monitoring, rate limiting
+- **BiasDetectionService**: Content and recommendation bias detection
+- **ComplianceNotice**: Platform compliance warnings
+- **DataControlPanel**: User data management
+
+## DEPENDENCY MANAGEMENT
+
+### Vertical Slice Dependencies
+
+- **ALWAYS** map dependencies before implementation
+- **ALWAYS** implement dependency injection patterns
+- **ALWAYS** use interface-based design
+- **ALWAYS** implement proper error handling for dependencies
+- **ALWAYS** follow single responsibility principle
+
+### Critical Dependencies
+
+- Slice 1 (Auth) → All other slices
+- Slice 2 (Channels) → User model, YouTube API
+- Slice 3 (Analytics) → YouTubeChannel model, Analytics API
+- Slice 4 (Notion) → User model, Notion API
+- Slice 5 (Sync) → Multiple service dependencies
+
+## MCP SERVER INTEGRATION
+
+### Available MCP Servers
+
+- **ai-validation**: AI-powered JSON testing and prompt engineering
+- **code-health**: Project-specific health monitoring and metrics
+- **code-mapper**: Source map visualization and circular dependency detection
+- **code-search**: Advanced semantic and text-based code search
+- **typescript-react-agent**: Project manager with Mistral AI backend
+- **sequential-thinking**: Chain-of-thought reasoning engine
+- **puppeteer**: Browser automation for testing and scraping
+
+### MCP Usage Guidelines
+
+- **ALWAYS** use MCP servers for appropriate tasks (health checks, code analysis, testing)
+- **ALWAYS** leverage code-search for comprehensive codebase exploration
+- **ALWAYS** use ai-validation for prompt engineering and API testing
+- **ALWAYS** utilize code-health for dependency analysis and quality metrics
+- **ALWAYS** use sequential-thinking for complex reasoning tasks
+
+## TESTING FRAMEWORK
+
+### Test Categories Required
+
+- **Unit Tests**: Individual service and component testing
+- **Integration Tests**: API endpoint and service integration testing
+- **Compliance Tests**: Regulatory compliance validation
+- **Security Tests**: Security vulnerability and penetration testing
+- **Performance Tests**: Load and stress testing
+- **End-to-End Tests**: Complete user workflow testing
+
+### Testing Standards
+
+- **ALWAYS** write tests for all new functionality
+- **ALWAYS** maintain 90%+ code coverage
+- **ALWAYS** test error conditions and edge cases
+- **ALWAYS** include compliance validation tests
+- **ALWAYS** implement security vulnerability tests
+- **ALWAYS** use proper test isolation and mocking
+
+### Compliance Testing Requirements
+
+- **ALWAYS** test GDPR/CCPA compliance features
+- **ALWAYS** validate API compliance and rate limiting
+- **ALWAYS** test AI bias detection and mitigation
+- **ALWAYS** validate data export and deletion functionality
+- **ALWAYS** test audit logging and tracking
+
+## IMPLEMENTATION STRATEGY
+
+### Vertical Slice Approach
+
+- **ALWAYS** implement compliance-first design
+- **ALWAYS** deliver end-to-end value in each slice
+- **ALWAYS** provide clear, actionable steps with defined inputs/outputs
+- **ALWAYS** create testable increments that can be independently validated
+- **ALWAYS** order slices to minimize cross-dependencies
+- **ALWAYS** include compliance considerations from the start
+
+### Slice Implementation Order
+
+1. **Slice 1**: Project Foundation & Authentication ✅
+2. **Slice 2**: YouTube Channel Connection 🔄
+3. **Slice 3**: Advanced Analytics Dashboard ⏳
+4. **Slice 4**: Basic AI Insights Engine ⏳
+5. **Slice 5**: Notion Integration Foundation ⏳
+6. **Slice 6**: Subscription Management & Billing ⏳
+
+### Documentation Requirements
+
+- **ALWAYS** update implementation plan after each slice
+- **ALWAYS** document progress and completion status
+- **ALWAYS** maintain clear slice definitions and requirements
+- **ALWAYS** track dependencies between slices
+- **ALWAYS** provide clear next steps and timelines
+
 ## Technology Stack
 
 ### Frontend
@@ -556,12 +793,12 @@ function processRuleFiles(files: RuleFile[]): Record<string, Category> {
   const categories: Record<string, Category> = {};
 
   // Process each file
-  files.forEach((file) => {
+  files.forEach(file => {
     // Analyze content and determine categories
     const fileCategories = determineCategories(file);
 
     // Assign to categories
-    fileCategories.forEach((category) => {
+    fileCategories.forEach(category => {
       if (!categories[category]) {
         categories[category] = {
           name: formatCategoryName(category),
@@ -582,14 +819,14 @@ function determineCategories(file: RuleFile): string[] {
   const categories = new Set<string>();
 
   // Add categories based on tags
-  file.tags.forEach((tag) => {
+  file.tags.forEach(tag => {
     const category = mapTagToCategory(tag);
     if (category) categories.add(category);
   });
 
   // Analyze description for additional categories
   const descriptionCategories = analyzeDescription(file.description);
-  descriptionCategories.forEach((category) => categories.add(category));
+  descriptionCategories.forEach(category => categories.add(category));
 
   return Array.from(categories);
 }
@@ -1014,6 +1251,26 @@ function determineCategories(file: RuleFile): string[] {
 - Write maintainable and scalable code
 
 ## AI-Assisted Development Rules
+
+### 7-Possible-Solutions Thinking Framework
+
+**MANDATORY FOR ALL COMPLEX PROBLEMS**: When faced with architectural decisions, multiple implementation approaches, or complex problem-solving scenarios, systematically apply the 7-Possible-Solutions Thinking Framework:
+
+#### Required Output Structure:
+
+1. **Problem Statement**: Clear definition with constraints and context
+2. **7 Distinct Solutions**: Each with approach name, strategy, pros, cons, complexity, time estimate
+3. **Evaluation Matrix**: Compare solutions across feasibility, effectiveness, maintainability, risk, alignment
+4. **Selected Solution**: Chosen approach with detailed rationale
+5. **Implementation Plan**: Next steps and timeline
+
+#### Quality Standards:
+
+- Each solution must be genuinely different, not just variations
+- Include both technical and business perspectives
+- Provide realistic time and complexity estimates
+- Address potential failure modes and edge cases
+- Align with project's technical standards and constraints
 
 ### Guidelines for AI Programming Integration
 

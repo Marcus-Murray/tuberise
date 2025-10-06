@@ -4,6 +4,44 @@
 
 These rules are **NON-NEGOTIABLE** and must be followed at all times. Any violation will result in immediate correction and potential termination of the development session.
 
+## 0. SIMPLE & MODULAR ARCHITECTURE
+
+### 0.1 Simple & Modular Development Approach
+
+**MANDATORY** adherence to Simple & Modular Approach for all development:
+
+#### Core Benefits:
+- **Easier Debugging**: Issues isolated to one module
+- **Faster Development**: Work on one feature at a time
+- **Better Testing**: Each module tested independently
+- **Easier Updates**: Change one module without affecting others
+- **Clear Dependencies**: Easy to see what depends on what
+
+#### Module Rules:
+1. **Module Isolation**: Each module must be self-contained and independent
+2. **No Cross-Dependencies**: Modules cannot depend on each other directly
+3. **Single Responsibility**: Each module handles only one concern
+4. **Clear Interfaces**: Simple, intuitive function signatures
+5. **Independent Testing**: Each module must be testable independently
+
+**Rule File**: `guides/SIMPLE-MODULAR-DEVELOPMENT-RULES.md`
+**Activation**: Applied to ALL development work
+
+## 1. SYSTEMATIC PROBLEM SOLVING
+
+### 1.1 7-Possible-Solutions Thinking Framework
+
+When faced with complex problems, architectural decisions, or multiple implementation approaches, **MANDATORY** use of the 7-Possible-Solutions Thinking Framework:
+
+- **ALWAYS** analyze 7 different approaches before implementation
+- **ALWAYS** provide detailed pros/cons for each solution
+- **ALWAYS** include feasibility, effectiveness, and risk assessments
+- **ALWAYS** provide clear rationale for the chosen solution
+- **ALWAYS** create an implementation plan with next steps
+
+**Rule File**: `guides/7-possible-solutions-thinking-rule.md`
+**Activation**: Triggered by requests for "systematic analysis", "different approaches", or complex problem-solving scenarios.
+
 ## 1. AUTHORIZATION REQUIREMENTS
 
 ### 1.1 Explicit Permission Required

@@ -35,6 +35,12 @@ model User {
   lastLoginAt   DateTime?
   loginCount    Int       @default(0)
 
+  // GDPR Compliance fields
+  dataRetentionUntil DateTime?  // When user data should be deleted
+  consentGivenAt     DateTime?  // When user gave consent
+  dataProcessingConsent Boolean @default(false)
+  marketingConsent    Boolean   @default(false)
+
   @@map("users")
 }
 
